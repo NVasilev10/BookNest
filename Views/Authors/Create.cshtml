@@ -1,0 +1,54 @@
+@model BookNest.Models.Author
+
+@{
+    ViewData["Title"] = "Add Author";
+}
+
+<h1>✍️ Add New Author</h1>
+
+<hr />
+
+<div class="row">
+    <div class="col-md-6">
+
+        <form asp-action="Create">
+
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+            <div class="mb-3">
+                <label asp-for="Name" class="form-label"></label>
+
+                <input asp-for="Name" class="form-control" />
+
+                <span asp-validation-for="Name" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Biography" class="form-label"></label>
+
+                <textarea asp-for="Biography"
+                          class="form-control"
+                          rows="6"></textarea>
+
+                <span asp-validation-for="Biography"
+                      class="text-danger"></span>
+            </div>
+
+            <button type="submit" class="btn btn-success">
+                ➕ Add Author
+            </button>
+
+            <a asp-action="Index" class="btn btn-secondary">
+                ← Back to List
+            </a>
+
+        </form>
+
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

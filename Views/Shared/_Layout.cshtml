@@ -1,0 +1,133 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>@ViewData["Title"] - BookNest</title>
+
+    <script type="importmap"></script>
+
+    <link rel="stylesheet"
+          href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+
+    <link rel="stylesheet"
+          href="~/css/site.css"
+          asp-append-version="true" />
+
+    <link rel="stylesheet"
+          href="~/BookNest.styles.css"
+          asp-append-version="true" />
+</head>
+
+<body class="bg-light">
+
+    <header>
+
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm">
+
+            <div class="container">
+
+                <!-- Logo -->
+                <a class="navbar-brand fw-bold fs-4"
+                   asp-controller="Home"
+                   asp-action="Index">
+                    📚 BookNest
+                </a>
+
+
+                <!-- Mobile Button -->
+                <button class="navbar-toggler"
+                        type="button"
+                        data-bs-toggle="collapse"
+                        data-bs-target="#navbarNav">
+
+                    <span class="navbar-toggler-icon"></span>
+
+                </button>
+
+
+                <!-- Navigation -->
+                <div class="collapse navbar-collapse"
+                     id="navbarNav">
+
+                    <ul class="navbar-nav ms-auto">
+
+                        <li class="nav-item">
+                            <a class="nav-link"
+                               asp-controller="Home"
+                               asp-action="Index">
+                                🏠 Home
+                            </a>
+                        </li>
+
+                        <li class="nav-item">
+                            <a class="nav-link"
+                               asp-controller="Books"
+                               asp-action="Index">
+                                📚 Books
+                            </a>
+                        </li>
+
+                        <li class="nav-item">
+                            <a class="nav-link"
+                               asp-controller="Authors"
+                               asp-action="Index">
+                                ✍️ Authors
+                            </a>
+                        </li>
+
+                        <li class="nav-item">
+                            <a class="nav-link"
+                               asp-controller="Categories"
+                               asp-action="Index">
+                                🏷️ Categories
+                            </a>
+                        </li>
+
+                    </ul>
+
+                </div>
+
+            </div>
+
+        </nav>
+
+    </header>
+
+
+    <!-- Main Content -->
+    <div class="container py-4">
+
+        <main role="main">
+
+            @RenderBody()
+
+        </main>
+
+    </div>
+
+
+    <!-- Footer -->
+    <footer class="border-top bg-white text-muted py-3 mt-5">
+
+        <div class="container text-center">
+
+            © 2026 BookNest 📚
+
+        </div>
+
+    </footer>
+
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script src="~/js/site.js"
+            asp-append-version="true"></script>
+
+    @await RenderSectionAsync("Scripts", required: false)
+
+</body>
+</html>

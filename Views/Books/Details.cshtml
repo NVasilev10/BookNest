@@ -1,0 +1,122 @@
+@model BookNest.Models.Book
+
+@{
+    ViewData["Title"] = "Book Details";
+}
+
+<div class="mb-4">
+    <a asp-action="Index" class="btn btn-outline-secondary">
+        ← Back to Books
+    </a>
+</div>
+
+<div class="card shadow-sm border-0">
+
+    <div class="row g-0">
+
+        <!-- Book Image -->
+        <div class="col-md-4">
+
+            @if (!string.IsNullOrEmpty(Model.ImageUrl))
+            {
+                <img src="@Model.ImageUrl"
+                     class="img-fluid rounded-start w-100"
+                     alt="@Model.Title"
+                     style="height: 100%; min-height: 450px; object-fit: cover;" />
+            }
+            else
+            {
+                <div class="d-flex align-items-center justify-content-center bg-light"
+                     style="height: 100%; min-height: 450px; font-size: 120px;">
+                    📚
+                </div>
+            }
+
+        </div>
+
+
+        <!-- Book Information -->
+        <div class="col-md-8">
+
+            <div class="card-body p-4">
+
+                <h1 class="fw-bold mb-3">
+                    @Model.Title
+                </h1>
+
+                <hr />
+
+                <div class="mb-3">
+                    <h5>📝 Description</h5>
+
+                    @if (!string.IsNullOrEmpty(Model.Description))
+                    {
+                        <p class="text-muted">
+                            @Model.Description
+                        </p>
+                    }
+                    else
+                    {
+                        <p class="text-muted">
+                            No description available.
+                        </p>
+                    }
+                </div>
+
+
+                <div class="row">
+
+                    <div class="col-md-6 mb-3">
+                        <h6>✍️ Author</h6>
+
+                        <p class="fs-5">
+                            @(Model.Author?.Name ?? "Unknown")
+                        </p>
+                    </div>
+
+
+                    <div class="col-md-6 mb-3">
+                        <h6>🏷️ Category</h6>
+
+                        <p class="fs-5">
+                            @(Model.Category?.Name ?? "No category")
+                        </p>
+                    </div>
+
+                </div>
+
+
+                <div class="mb-4">
+
+                    <h6>📅 Published Year</h6>
+
+                    <p class="fs-5">
+                        @Model.PublishedYear
+                    </p>
+
+                </div>
+
+
+                <div class="border-top pt-3">
+
+                    <a asp-action="Edit"
+                       asp-route-id="@Model.Id"
+                       class="btn btn-warning">
+                        ✏️ Edit Book
+                    </a>
+
+                    <a asp-action="Delete"
+                       asp-route-id="@Model.Id"
+                       class="btn btn-danger">
+                        🗑️ Delete Book
+                    </a>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
