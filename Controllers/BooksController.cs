@@ -97,13 +97,13 @@ namespace BookNest.Controllers
         // GET: Books/Create
         public IActionResult Create()
         {
-            ViewData["AuthorId"] = new SelectList(
+            ViewBag.AuthorId = new SelectList(
                 _context.Authors,
                 "Id",
                 "Name"
             );
 
-            ViewData["CategoryId"] = new SelectList(
+            ViewBag.CategoryId = new SelectList(
                 _context.Categories,
                 "Id",
                 "Name"
@@ -127,14 +127,14 @@ namespace BookNest.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
-            ViewData["AuthorId"] = new SelectList(
+            ViewBag.AuthorId = new SelectList(
                 _context.Authors,
                 "Id",
                 "Name",
                 book.AuthorId
             );
 
-            ViewData["CategoryId"] = new SelectList(
+            ViewBag.CategoryId = new SelectList(
                 _context.Categories,
                 "Id",
                 "Name",
@@ -178,14 +178,14 @@ namespace BookNest.Controllers
                 return NotFound();
             }
 
-            ViewData["AuthorId"] = new SelectList(
+            ViewBag.AuthorId = new SelectList(
                 _context.Authors,
                 "Id",
                 "Name",
                 book.AuthorId
             );
 
-            ViewData["CategoryId"] = new SelectList(
+            ViewBag.CategoryId = new SelectList(
                 _context.Categories,
                 "Id",
                 "Name",
@@ -228,14 +228,14 @@ namespace BookNest.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
-            ViewData["AuthorId"] = new SelectList(
+            ViewBag.AuthorId = new SelectList(
                 _context.Authors,
                 "Id",
                 "Name",
                 book.AuthorId
             );
 
-            ViewData["CategoryId"] = new SelectList(
+            ViewBag.CategoryId = new SelectList(
                 _context.Categories,
                 "Id",
                 "Name",

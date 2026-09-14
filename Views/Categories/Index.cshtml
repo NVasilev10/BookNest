@@ -19,6 +19,29 @@
 
 </div>
 
+<!-- 🔍 Search Form -->
+<form asp-action="Index" method="get" class="mb-4">
+    <div class="row g-2">
+        <div class="col-md-6">
+            <input type="text" 
+                   name="searchString" 
+                   value="@ViewData["SearchString"]" 
+                   class="form-control" 
+                   placeholder="🔍 Search categories by name..." />
+        </div>
+        <div class="col-md-2">
+            <button type="submit" class="btn btn-primary w-100">
+                Search
+            </button>
+        </div>
+        <div class="col-md-2">
+            <a asp-action="Index" class="btn btn-outline-secondary w-100">
+                Clear
+            </a>
+        </div>
+    </div>
+</form>
+
 @if (!Model.Any())
 {
     <div class="alert alert-info text-center p-4">
@@ -68,6 +91,13 @@ else
                                 No description available.
                             </p>
                         }
+
+                        <!-- 📚 Book count badge -->
+                        <div class="mt-2 mb-3 text-center">
+                            <span class="badge bg-success">
+                                📚 @item.Books.Count book@(item.Books.Count != 1 ? "s" : "")
+                            </span>
+                        </div>
 
                         <div class="mt-auto pt-3 text-center">
 

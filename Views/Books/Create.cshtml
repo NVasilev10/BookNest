@@ -4,14 +4,20 @@
     ViewData["Title"] = "Add New Book";
 }
 
-<h1>📚 Add New Book</h1>
+<div class="mb-4">
+    <a asp-action="Index" class="btn btn-outline-secondary">
+        ← Back to Books
+    </a>
+</div>
 
-<hr />
+<div class="card shadow-sm">
+    <div class="card-body">
+        <h1 class="card-title mb-4">📚 Add New Book</h1>
 
 <div class="row">
-    <div class="col-md-6">
+    <div class="col-md-8">
 
-        <form asp-action="Create">
+        <form asp-action="Create" method="post">
 
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
@@ -22,7 +28,6 @@
 
                 <span asp-validation-for="Title" class="text-danger"></span>
             </div>
-
 
             <div class="mb-3">
                 <label asp-for="Description" class="form-label"></label>
@@ -35,7 +40,6 @@
                       class="text-danger"></span>
             </div>
 
-
             <div class="mb-3">
                 <label asp-for="PublishedYear" class="form-label"></label>
 
@@ -46,7 +50,6 @@
                 <span asp-validation-for="PublishedYear"
                       class="text-danger"></span>
             </div>
-
 
             <div class="mb-3">
                 <label asp-for="ImageUrl" class="form-label"></label>
@@ -59,15 +62,15 @@
                       class="text-danger"></span>
             </div>
 
-
             <div class="mb-3">
                 <label asp-for="AuthorId" class="form-label">
-                    Author
+                    ✍️ Author <span class="text-danger">*</span>
                 </label>
 
                 <select asp-for="AuthorId"
                         class="form-select"
-                        asp-items="ViewBag.AuthorId">
+                        asp-items="ViewBag.AuthorId"
+                        required>
                     <option value="">-- Select Author --</option>
                 </select>
 
@@ -75,22 +78,21 @@
                       class="text-danger"></span>
             </div>
 
-
             <div class="mb-3">
                 <label asp-for="CategoryId" class="form-label">
-                    Category
+                    🏷️ Category <span class="text-danger">*</span>
                 </label>
 
                 <select asp-for="CategoryId"
                         class="form-select"
-                        asp-items="ViewBag.CategoryId">
+                        asp-items="ViewBag.CategoryId"
+                        required>
                     <option value="">-- Select Category --</option>
                 </select>
 
                 <span asp-validation-for="CategoryId"
                       class="text-danger"></span>
             </div>
-
 
             <button type="submit" class="btn btn-success">
                 ➕ Add Book
@@ -101,6 +103,9 @@
             </a>
 
         </form>
+
+    </div>
+</div>
 
     </div>
 </div>

@@ -15,11 +15,17 @@ namespace BookNest.Controllers
         }
 
         // GET: Categories
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(string? searchString)
         {
-            var categories = await _context.Categories.ToListAsync();
+            var categories = _context.Categories.Include(c => c.Books).AsQueryable();
 
-            return View(categories);
+            if (!string.IsNullOrWhiteSpace(searchString))
+            {
+                categories = categories.Where(c => c.Name.Contains(searchString));
+                ViewData["SearchString"] = searchString;
+            }
+
+            return View(await categories.ToListAsync());
         }
 
         // GET: Categories/Details/5
@@ -31,6 +37,7 @@ namespace BookNest.Controllers
             }
 
             var category = await _context.Categories
+                .Include(c => c.Books)
                 .FirstOrDefaultAsync(c => c.Id == id);
 
             if (category == null)

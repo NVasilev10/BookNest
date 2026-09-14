@@ -4,14 +4,20 @@
     ViewData["Title"] = "Edit Book";
 }
 
-<h1>✏️ Edit Book</h1>
+<div class="mb-4">
+    <a asp-action="Index" class="btn btn-outline-secondary">
+        ← Back to Books
+    </a>
+</div>
 
-<hr />
+<div class="card shadow-sm">
+    <div class="card-body">
+        <h1 class="card-title mb-4">✏️ Edit Book</h1>
 
 <div class="row">
-    <div class="col-md-6">
+    <div class="col-md-8">
 
-        <form asp-action="Edit">
+        <form asp-action="Edit" method="post">
 
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
@@ -39,7 +45,8 @@
                 <label asp-for="PublishedYear" class="form-label"></label>
 
                 <input asp-for="PublishedYear"
-                       class="form-control" />
+                       class="form-control"
+                       type="number" />
 
                 <span asp-validation-for="PublishedYear"
                       class="text-danger"></span>
@@ -56,11 +63,14 @@
             </div>
 
             <div class="mb-3">
-                <label asp-for="AuthorId" class="form-label"></label>
+                <label asp-for="AuthorId" class="form-label">
+                    ✍️ Author <span class="text-danger">*</span>
+                </label>
 
                 <select asp-for="AuthorId"
                         class="form-select"
-                        asp-items="ViewBag.AuthorId">
+                        asp-items="ViewBag.AuthorId"
+                        required>
                     <option value="">-- Select Author --</option>
                 </select>
 
@@ -69,11 +79,14 @@
             </div>
 
             <div class="mb-3">
-                <label asp-for="CategoryId" class="form-label"></label>
+                <label asp-for="CategoryId" class="form-label">
+                    🏷️ Category <span class="text-danger">*</span>
+                </label>
 
                 <select asp-for="CategoryId"
                         class="form-select"
-                        asp-items="ViewBag.CategoryId">
+                        asp-items="ViewBag.CategoryId"
+                        required>
                     <option value="">-- Select Category --</option>
                 </select>
 
@@ -91,6 +104,17 @@
 
         </form>
 
+    </div>
+</div>
+
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}
     </div>
 </div>
 

@@ -15,11 +15,17 @@ namespace BookNest.Controllers
         }
 
         // GET: Authors
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(string? searchString)
         {
-            var authors = await _context.Authors.ToListAsync();
+            var authors = _context.Authors.Include(a => a.Books).AsQueryable();
 
-            return View(authors);
+            if (!string.IsNullOrWhiteSpace(searchString))
+            {
+                authors = authors.Where(a => a.Name.Contains(searchString));
+                ViewData["SearchString"] = searchString;
+            }
+
+            return View(await authors.ToListAsync());
         }
 
         // GET: Authors/Details/5
@@ -31,6 +37,7 @@ namespace BookNest.Controllers
             }
 
             var author = await _context.Authors
+                .Include(a => a.Books)
                 .FirstOrDefaultAsync(a => a.Id == id);
 
             if (author == null)

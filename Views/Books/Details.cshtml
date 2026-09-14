@@ -105,11 +105,13 @@
                         ✏️ Edit Book
                     </a>
 
-                    <a asp-action="Delete"
-                       asp-route-id="@Model.Id"
-                       class="btn btn-danger">
+                    <!-- Delete Button with Modal -->
+                    <button type="button" 
+                            class="btn btn-danger"
+                            data-bs-toggle="modal" 
+                            data-bs-target="#deleteModal">
                         🗑️ Delete Book
-                    </a>
+                    </button>
 
                 </div>
 
@@ -119,4 +121,32 @@
 
     </div>
 
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title" id="deleteModalLabel">
+                    ⚠️ Delete Book
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete <strong>@Model.Title</strong>?</p>
+                <p class="text-muted small">This action cannot be undone.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    Cancel
+                </button>
+                <a asp-action="Delete"
+                   asp-route-id="@Model.Id"
+                   class="btn btn-danger">
+                    Yes, Delete Book
+                </a>
+            </div>
+        </div>
+    </div>
 </div>

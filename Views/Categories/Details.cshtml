@@ -33,6 +33,42 @@
 
         <hr />
 
+        @if (Model.Books.Any())
+        {
+            <h3>📚 Books in this Category</h3>
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Title</th>
+                            <th>Author</th>
+                            <th>Published Year</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var book in Model.Books)
+                        {
+                            <tr>
+                                <td>@book.Title</td>
+                                <td>@book.Author?.Name</td>
+                                <td>@book.PublishedYear</td>
+                                <td>
+                                    <a asp-controller="Books" asp-action="Details" asp-route-id="@book.Id" class="btn btn-sm btn-info">View</a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+        else
+        {
+            <p class="text-muted">This category has no books yet.</p>
+        }
+
+        <hr />
+
         <a asp-action="Edit"
            asp-route-id="@Model.Id"
            class="btn btn-primary">

@@ -14,40 +14,33 @@
     <link rel="stylesheet"
           href="~/css/site.css"
           asp-append-version="true" />
-
-    <link rel="stylesheet"
-          href="~/BookNest.styles.css"
-          asp-append-version="true" />
 </head>
 
 <body class="bg-light">
 
     <header>
-
         <nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm">
 
             <div class="container">
 
-                <!-- Logo -->
                 <a class="navbar-brand fw-bold fs-4"
                    asp-controller="Home"
                    asp-action="Index">
                     📚 BookNest
                 </a>
 
-
-                <!-- Mobile Button -->
                 <button class="navbar-toggler"
                         type="button"
                         data-bs-toggle="collapse"
-                        data-bs-target="#navbarNav">
+                        data-bs-target="#navbarNav"
+                        aria-controls="navbarNav"
+                        aria-expanded="false"
+                        aria-label="Toggle navigation">
 
                     <span class="navbar-toggler-icon"></span>
 
                 </button>
 
-
-                <!-- Navigation -->
                 <div class="collapse navbar-collapse"
                      id="navbarNav">
 
@@ -92,33 +85,35 @@
             </div>
 
         </nav>
-
     </header>
 
-
-    <!-- Main Content -->
     <div class="container py-4">
 
         <main role="main">
-
             @RenderBody()
-
         </main>
 
     </div>
 
+    <footer class="border-top bg-white text-muted py-4 mt-5">
 
-    <!-- Footer -->
-    <footer class="border-top bg-white text-muted py-3 mt-5">
-
-        <div class="container text-center">
-
-            © 2026 BookNest 📚
-
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6">
+                    <h5 class="fw-bold">📚 BookNest</h5>
+                    <p class="text-muted small">
+                        Your personal digital library for managing books, authors and categories.
+                    </p>
+                </div>
+                <div class="col-md-6 text-md-end text-center">
+                    <p class="text-muted small mb-0">
+                        © 2026 BookNest - All rights reserved
+                    </p>
+                </div>
+            </div>
         </div>
 
     </footer>
-
 
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
 
