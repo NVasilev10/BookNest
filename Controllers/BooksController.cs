@@ -95,51 +95,57 @@ namespace BookNest.Controllers
         }
 
         // GET: Books/Create
-        public IActionResult Create()
+        public async Task<IActionResult> Create()
         {
-            ViewBag.AuthorId = new SelectList(
-                _context.Authors,
-                "Id",
-                "Name"
-            );
-
-            ViewBag.CategoryId = new SelectList(
-                _context.Categories,
-                "Id",
-                "Name"
-            );
-
+            await PopulateDropdowns();
             return View();
+        }
+
+        private async Task PopulateDropdowns(int selectedAuthorId = 0, int selectedCategoryId = 0)
+        {
+            var authors = await _context.Authors.ToListAsync();
+            var categories = await _context.Categories.ToListAsync();
+
+            if (!authors.Any())
+            {
+                ModelState.AddModelError("", "No authors available. Please add an author first.");
+            }
+            if (!categories.Any())
+            {
+                ModelState.AddModelError("", "No categories available. Please add a category first.");
+            }
+
+            ViewBag.AuthorId = new SelectList(authors, "Id", "Name", selectedAuthorId);
+            ViewBag.CategoryId = new SelectList(categories, "Id", "Name", selectedCategoryId);
         }
 
         // POST: Books/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(
-            [Bind("Id,Title,Description,PublishedYear,ImageUrl,AuthorId,CategoryId")]
-            Book book)
+        public async Task<IActionResult> Create(Book book)
         {
+            // Remove IsFavorite and Author/Category navigation properties from ModelState
+            ModelState.Remove("IsFavorite");
+            ModelState.Remove("Author");
+            ModelState.Remove("Category");
+
             if (ModelState.IsValid)
             {
-                _context.Add(book);
-                await _context.SaveChangesAsync();
+                try
+                {
+                    _context.Add(book);
+                    await _context.SaveChangesAsync();
 
-                return RedirectToAction(nameof(Index));
+                    return RedirectToAction(nameof(Index));
+                }
+                catch (Exception ex)
+                {
+                    ModelState.AddModelError("", $"Error saving book: {ex.Message}");
+                }
             }
 
-            ViewBag.AuthorId = new SelectList(
-                _context.Authors,
-                "Id",
-                "Name",
-                book.AuthorId
-            );
-
-            ViewBag.CategoryId = new SelectList(
-                _context.Categories,
-                "Id",
-                "Name",
-                book.CategoryId
-            );
+            // Populate dropdowns again for display
+            await PopulateDropdowns(book.AuthorId, book.CategoryId);
 
             return View(book);
         }
@@ -208,40 +214,26 @@ namespace BookNest.Controllers
                 return NotFound();
             }
 
+            // Remove navigation properties from ModelState
+            ModelState.Remove("Author");
+            ModelState.Remove("Category");
+
             if (ModelState.IsValid)
             {
                 try
                 {
                     _context.Update(book);
                     await _context.SaveChangesAsync();
+                    return RedirectToAction(nameof(Index));
                 }
-                catch (DbUpdateConcurrencyException)
+                catch (Exception ex)
                 {
-                    if (!BookExists(book.Id))
-                    {
-                        return NotFound();
-                    }
-
-                    throw;
+                    ModelState.AddModelError("", $"Error saving book: {ex.Message}");
                 }
-
-                return RedirectToAction(nameof(Index));
             }
 
-            ViewBag.AuthorId = new SelectList(
-                _context.Authors,
-                "Id",
-                "Name",
-                book.AuthorId
-            );
-
-            ViewBag.CategoryId = new SelectList(
-                _context.Categories,
-                "Id",
-                "Name",
-                book.CategoryId
-            );
-
+            // Populate dropdowns again for display
+            await PopulateDropdowns(book.AuthorId, book.CategoryId);
             return View(book);
         }
 

@@ -17,7 +17,7 @@ namespace BookNest.Models
 
         [Range(1000, 2100, ErrorMessage = "Годината на издаване трябва да е между 1000 и 2100.")]
         [Display(Name = "Година на издаване")]
-        public int PublishedYear { get; set; }
+        public int? PublishedYear { get; set; }
 
         [Url(ErrorMessage = "Невалиден URL адрес.")]
         [Display(Name = "Изображение URL")]
