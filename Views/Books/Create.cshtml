@@ -72,7 +72,9 @@
 
                 <select asp-for="AuthorId"
                         class="form-select @(Html.ValidationMessageFor(m => m.AuthorId) != null ? "is-invalid" : "")"
-                        asp-items="ViewBag.AuthorId">
+                        asp-items="ViewBag.AuthorId"
+                        required>
+                    <option value="">-- Select Author --</option>
                 </select>
 
                 <span asp-validation-for="AuthorId"
@@ -86,7 +88,9 @@
 
                 <select asp-for="CategoryId"
                         class="form-select @(Html.ValidationMessageFor(m => m.CategoryId) != null ? "is-invalid" : "")"
-                        asp-items="ViewBag.CategoryId">
+                        asp-items="ViewBag.CategoryId"
+                        required>
+                    <option value="">-- Select Category --</option>
                 </select>
 
                 <span asp-validation-for="CategoryId"
