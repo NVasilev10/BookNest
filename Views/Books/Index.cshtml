@@ -12,11 +12,26 @@
         <p class="text-muted mb-0">
             Browse and manage your book collection.
         </p>
+        @if (ViewData["SearchString"] != null || ViewData["FavoritesOnly"] as bool? == true)
+        {
+            <small class="text-success">
+                ✓ Found <strong>@ViewData["ResultCount"]</strong> book(s)
+            </small>
+        }
+        <br />
+        <small class="text-warning">
+            ⭐ <strong>@ViewData["FavoritesCount"]</strong> favorite(s)
+        </small>
     </div>
 
-    <a asp-controller="Books" asp-action="Create" class="btn btn-success">
-        ➕ Add New Book
-    </a>
+    <div>
+        <a asp-action="Favorites" class="btn btn-warning me-2">
+            ⭐ My Favorites (@ViewData["FavoritesCount"])
+        </a>
+        <a asp-controller="Books" asp-action="Create" class="btn btn-success">
+            ➕ Add New Book
+        </a>
+    </div>
 
 </div>
 
@@ -26,13 +41,18 @@
 
     <div class="row g-2">
 
-        <!-- Search -->
+        <!-- Advanced Search -->
         <div class="col-md-4">
-            <input type="text"
-                   name="searchString"
-                   value="@ViewData["SearchString"]"
-                   class="form-control"
-                   placeholder="🔍 Search by title..." />
+            <div class="input-group">
+                <span class="input-group-text">🔍</span>
+                <input type="text"
+                       name="searchString"
+                       value="@ViewData["SearchString"]"
+                       class="form-control"
+                       placeholder="Search by title, description, author..." 
+                       title="Search across titles, descriptions, and author names" />
+            </div>
+            <small class="text-muted d-block mt-1">Searches title, description & author</small>
         </div>
 
         <!-- Author Filter -->
@@ -80,7 +100,8 @@
                        name="favoritesOnly"
                        value="true"
                        id="favoritesOnly"
-                @(favoritesOnly ? "checked" : "") />
+                @(favoritesOnly ? "checked" : "") 
+                       onchange="this.form.submit()" />
 
                 <label class="form-check-label"
                        for="favoritesOnly">
@@ -97,6 +118,11 @@
             <a asp-action="Index"
                class="btn btn-secondary btn-sm">
                 🧹 Clear Filters
+            </a>
+
+            <a asp-action="Favorites"
+               class="btn btn-warning btn-sm ms-2">
+                ⭐ View All Favorites
             </a>
 
         </div>

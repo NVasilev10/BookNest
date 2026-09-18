@@ -15,6 +15,7 @@ namespace BookNest.Models
         [Display(Name = "Описание")]
         public string? Description { get; set; }
 
+        [Required(ErrorMessage = "Година на издаване е задължителна.")]
         [Range(1000, 2100, ErrorMessage = "Годината на издаване трябва да е между 1000 и 2100.")]
         [Display(Name = "Година на издаване")]
         public int? PublishedYear { get; set; }

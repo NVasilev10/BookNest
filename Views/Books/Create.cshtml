@@ -41,11 +41,14 @@
             </div>
 
             <div class="mb-3">
-                <label asp-for="PublishedYear" class="form-label"></label>
+                <label asp-for="PublishedYear" class="form-label">
+                    📅 Published Year <span class="text-danger">*</span>
+                </label>
 
                 <input asp-for="PublishedYear"
                        class="form-control"
-                       type="number" />
+                       type="number"
+                       required />
 
                 <span asp-validation-for="PublishedYear"
                       class="text-danger"></span>

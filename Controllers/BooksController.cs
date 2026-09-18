@@ -20,17 +20,23 @@ namespace BookNest.Controllers
             string? searchString,
             int? authorId,
             int? categoryId,
-            bool favoritesOnly = false)
+            bool favoritesOnly = false,
+            int pageNumber = 1)
         {
             var books = _context.Books
                 .Include(b => b.Author)
                 .Include(b => b.Category)
                 .AsQueryable();
 
-            // 🔍 Search by title
+            // 🔍 Advanced Search - search by title, description, and author name
             if (!string.IsNullOrWhiteSpace(searchString))
             {
-                books = books.Where(b => b.Title.Contains(searchString));
+                var lowerSearch = searchString.ToLower();
+                books = books.Where(b => 
+                    b.Title.ToLower().Contains(lowerSearch) ||
+                    b.Description.ToLower().Contains(lowerSearch) ||
+                    b.Author.Name.ToLower().Contains(lowerSearch)
+                );
             }
 
             // ✍️ Filter by Author
@@ -51,6 +57,12 @@ namespace BookNest.Controllers
                 books = books.Where(b => b.IsFavorite);
             }
 
+            // Sort by title
+            var sortedBooks = books.OrderBy(b => b.Title);
+
+            // Get total favorites count
+            var favoritesCount = await _context.Books.CountAsync(b => b.IsFavorite);
+
             // Dropdown Authors
             ViewData["Authors"] = new SelectList(
                 await _context.Authors.ToListAsync(),
@@ -69,8 +81,24 @@ namespace BookNest.Controllers
 
             ViewData["SearchString"] = searchString;
             ViewData["FavoritesOnly"] = favoritesOnly;
+            ViewData["ResultCount"] = await sortedBooks.CountAsync();
+            ViewData["FavoritesCount"] = favoritesCount;
 
-            return View(await books.ToListAsync());
+            return View(await sortedBooks.ToListAsync());
+        }
+
+        // GET: Books/Favorites
+        public async Task<IActionResult> Favorites()
+        {
+            var favoriteBooks = await _context.Books
+                .Include(b => b.Author)
+                .Include(b => b.Category)
+                .Where(b => b.IsFavorite)
+                .OrderBy(b => b.Title)
+                .ToListAsync();
+
+            ViewData["FavoritesCount"] = favoriteBooks.Count;
+            return View(favoriteBooks);
         }
 
         // GET: Books/Details/5
