@@ -21,8 +21,13 @@ namespace BookNest.Controllers
             int? authorId,
             int? categoryId,
             bool favoritesOnly = false,
-            int pageNumber = 1)
+            int pageNumber = 1,
+            int pageSize = 6)
         {
+            // Validate page number
+            if (pageNumber < 1)
+                pageNumber = 1;
+
             var books = _context.Books
                 .Include(b => b.Author)
                 .Include(b => b.Category)
@@ -60,8 +65,20 @@ namespace BookNest.Controllers
             // Sort by title
             var sortedBooks = books.OrderBy(b => b.Title);
 
+            // Get total count before pagination
+            var totalCount = await sortedBooks.CountAsync();
+
             // Get total favorites count
             var favoritesCount = await _context.Books.CountAsync(b => b.IsFavorite);
+
+            // Apply pagination
+            var paginatedBooks = await sortedBooks
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            // Calculate total pages
+            var totalPages = (int)Math.Ceiling((double)totalCount / pageSize);
 
             // Dropdown Authors
             ViewData["Authors"] = new SelectList(
@@ -81,10 +98,15 @@ namespace BookNest.Controllers
 
             ViewData["SearchString"] = searchString;
             ViewData["FavoritesOnly"] = favoritesOnly;
-            ViewData["ResultCount"] = await sortedBooks.CountAsync();
+            ViewData["ResultCount"] = totalCount;
             ViewData["FavoritesCount"] = favoritesCount;
+            ViewData["PageNumber"] = pageNumber;
+            ViewData["TotalPages"] = totalPages;
+            ViewData["PageSize"] = pageSize;
+            ViewData["HasPreviousPage"] = pageNumber > 1;
+            ViewData["HasNextPage"] = pageNumber < totalPages;
 
-            return View(await sortedBooks.ToListAsync());
+            return View(paginatedBooks);
         }
 
         // GET: Books/Favorites
