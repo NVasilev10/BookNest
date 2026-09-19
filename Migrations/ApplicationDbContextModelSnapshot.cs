@@ -134,6 +134,56 @@ namespace BookNest.Migrations
                 {
                     b.Navigation("Books");
                 });
+
+            modelBuilder.Entity("BookNest.Models.Review", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("BookId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Comment")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("Rating")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BookId");
+
+                    b.ToTable("Reviews");
+                });
+
+            modelBuilder.Entity("BookNest.Models.Book", b =>
+                {
+                    b.HasMany("BookNest.Models.Review", "Reviews")
+                        .WithOne("Book")
+                        .HasForeignKey("BookId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Reviews");
+                });
+
+            modelBuilder.Entity("BookNest.Models.Review", b =>
+                {
+                    b.HasOne("BookNest.Models.Book", "Book")
+                        .WithMany("Reviews")
+                        .HasForeignKey("BookId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Book");
+                });
 #pragma warning restore 612, 618
         }
     }

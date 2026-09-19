@@ -16,5 +16,7 @@ namespace BookNest.Data
         public DbSet<Author> Authors { get; set; }
 
         public DbSet<Category> Categories { get; set; }
+
+        public DbSet<Review> Reviews { get; set; }
     }
 }

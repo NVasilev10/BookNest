@@ -36,5 +36,8 @@ namespace BookNest.Models
         [Display(Name = "Категория")]
         public int CategoryId { get; set; }
         public Category Category { get; set; } = null!;
+
+        // Reviews relationship
+        public List<Review> Reviews { get; set; } = new();
     }
 }
