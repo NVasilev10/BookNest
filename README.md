@@ -11,11 +11,19 @@ The application allows users to add, edit, view, search and delete books, as wel
 - Filter books by author
 - Filter books by category
 - Filter only favorite books
+- Sort books by rating, publish date, and title
 - Add new books
 - Edit existing books
 - View book details
 - Delete books
 - Mark and unmark books as favorites
+- Rate books with a 1-5 star rating system
+- View all user ratings (My Ratings)
+- Leave comments on book reviews
+- Manage book collections
+- Create custom book collections
+- Add/remove books from collections
+- View author profiles with statistics
 - Manage authors
 - Manage categories
 - Display statistics on the home page
@@ -78,15 +86,20 @@ BookNest
 
 ## Database
 
-BookNest uses Entity Framework Core with SQL Server.
+BookNest uses Entity Framework Core with SQL Server (LocalDB).
 
 The main entities are:
 
 - Book
 - Author
 - Category
+- Review (for rating and comments)
+- BookCollection (for organizing books into custom collections)
 
-A book belongs to an author and a category.
+Relationships:
+- A Book belongs to an Author and a Category
+- A Book can have multiple Reviews
+- A Book can belong to multiple BookCollections (many-to-many)
 
 The project contains Entity Framework Core migrations that create and update the database schema.
 
@@ -204,16 +217,23 @@ The Books section is the main part of the application.
 
 Users can:
 
-- See all books
-- Search by title
+- See all books  
+- Search by title, description, and author name
+- Sort by title, rating, or publish date
 - Filter by author
 - Filter by category
 - Show only favorite books
+- Rate books (1-5 stars)
+- Manage reviews with comments
+- View My Ratings - all books user has rated
+- Create and manage book collections
+- Add/remove books from collections
 - Add a book
 - Edit a book
-- View book details
+- View book details with reviews and average rating
 - Delete a book
 - Mark a book as favorite
+- View author profiles
 
 ## Authors
 
@@ -247,6 +267,8 @@ The home page provides an overview of the collection, including statistics such 
 - Number of favorite books
 - Number of authors
 - Number of categories
+- Recent books (last 6 added)
+- Favorite books (latest 6)
 
 ## GitHub Repository
 
