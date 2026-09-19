@@ -1,0 +1,42 @@
+@model BookNest.Models.BookCollection
+
+@{
+	ViewData["Title"] = "Edit Collection - " + Model.Name;
+}
+
+<div class="container mt-4">
+	<div class="row">
+		<div class="col-md-6 offset-md-3">
+			<h1>Edit Collection</h1>
+
+			<form asp-action="UpdateCollection" method="post" class="mt-4">
+				<input type="hidden" asp-for="Id" />
+
+				<div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+				<div class="mb-3">
+					<label asp-for="Name" class="form-label">Collection Name</label>
+					<input asp-for="Name" class="form-control" />
+					<span asp-validation-for="Name" class="text-danger"></span>
+				</div>
+
+				<div class="mb-3">
+					<label asp-for="Description" class="form-label">Description</label>
+					<textarea asp-for="Description" class="form-control" rows="4"></textarea>
+					<span asp-validation-for="Description" class="text-danger"></span>
+				</div>
+
+				<div class="d-grid gap-2">
+					<button type="submit" class="btn btn-primary">Save Changes</button>
+					<a href="@Url.Action("CollectionBooks", new { id = Model.Id })" class="btn btn-secondary">Cancel</a>
+				</div>
+			</form>
+		</div>
+	</div>
+</div>
+
+@section Scripts {
+	@{
+		await Html.RenderPartialAsync("_ValidationScriptsPartial");
+	}
+}

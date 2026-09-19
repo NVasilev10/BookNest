@@ -1,0 +1,94 @@
+@model BookNest.Models.Author
+
+@{
+	ViewData["Title"] = "Author Profile - " + Model.Name;
+	var books = ViewBag.Books as List<BookNest.Models.Book> ?? new List<BookNest.Models.Book>();
+	var authorStats = ViewBag.AuthorStats as Dictionary<string, object>;
+}
+
+<div class="container mt-4">
+	<div class="row mb-4">
+		<div class="col-md-8">
+			<h1>@Model.Name</h1>
+			@if (!string.IsNullOrEmpty(Model.Biography))
+			{
+				<p class="text-muted">@Model.Biography</p>
+			}
+		</div>
+	</div>
+
+	@if (authorStats != null)
+	{
+		<div class="row mb-4">
+			<div class="col-md-3">
+				<div class="card text-center">
+					<div class="card-body">
+						<h5 class="card-title">📚 Books</h5>
+						<h2>@authorStats["TotalBooks"]</h2>
+					</div>
+				</div>
+			</div>
+			<div class="col-md-3">
+				<div class="card text-center">
+					<div class="card-body">
+						<h5 class="card-title">⭐ Avg Rating</h5>
+						<h2>@((double)authorStats["AverageRating"]).ToString("F1")</h2>
+					</div>
+				</div>
+			</div>
+			<div class="col-md-3">
+				<div class="card text-center">
+					<div class="card-body">
+						<h5 class="card-title">📝 Reviews</h5>
+						<h2>@authorStats["TotalReviews"]</h2>
+					</div>
+				</div>
+			</div>
+			<div class="col-md-3">
+				<div class="card text-center">
+					<div class="card-body">
+						<h5 class="card-title">💬 Comments</h5>
+						<h2>@authorStats["TotalComments"]</h2>
+					</div>
+				</div>
+			</div>
+		</div>
+	}
+
+	<h2 class="mt-4">Books by @Model.Name</h2>
+
+	@if (books.Any())
+	{
+		<div class="row">
+			@foreach (var book in books.OrderByDescending(b => b.PublishedYear))
+			{
+				var avgRating = book.Reviews.Any() ? book.Reviews.Average(r => r.Rating) : 0;
+				<div class="col-md-4 mb-3">
+					<div class="card h-100">
+						@if (!string.IsNullOrEmpty(book.ImageUrl))
+						{
+							<img src="@book.ImageUrl" class="card-img-top" alt="@book.Title" style="height: 200px; object-fit: cover;">
+						}
+						<div class="card-body">
+							<h5 class="card-title">@book.Title</h5>
+							<p class="card-text text-muted">@book.PublishedYear</p>
+							<div class="mb-2">
+								<span class="badge bg-warning text-dark">⭐ @avgRating.ToString("F1")</span>
+								<span class="badge bg-secondary">@book.Reviews.Count reviews</span>
+							</div>
+							<a href="@Url.Action("Details", new { id = book.Id })" class="btn btn-primary btn-sm">View Details</a>
+						</div>
+					</div>
+				</div>
+			}
+		</div>
+	}
+	else
+	{
+		<p class="alert alert-info">No books found for this author.</p>
+	}
+
+	<div class="mt-4">
+		<a href="@Url.Action("Index")" class="btn btn-secondary">Back to Books</a>
+	</div>
+</div>

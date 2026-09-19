@@ -1,0 +1,59 @@
+@model BookNest.Models.BookCollection
+
+@{
+	ViewData["Title"] = Model.Name + " - Collection";
+}
+
+<div class="container mt-4">
+	<div class="row mb-4">
+		<div class="col-md-8">
+			<h1>📚 @Model.Name</h1>
+			@if (!string.IsNullOrEmpty(Model.Description))
+			{
+				<p class="text-muted">@Model.Description</p>
+			}
+		</div>
+		<div class="col-md-4 text-end">
+			<a href="@Url.Action("EditCollection", new { id = Model.Id })" class="btn btn-warning">Edit Collection</a>
+		</div>
+	</div>
+
+	@if (Model.Books.Any())
+	{
+		<div class="row">
+			@foreach (var book in Model.Books.OrderBy(b => b.Title))
+			{
+				var avgRating = book.Reviews.Any() ? book.Reviews.Average(r => r.Rating) : 0;
+				<div class="col-md-4 mb-3">
+					<div class="card h-100">
+						@if (!string.IsNullOrEmpty(book.ImageUrl))
+						{
+							<img src="@book.ImageUrl" class="card-img-top" alt="@book.Title" style="height: 200px; object-fit: cover;">
+						}
+						<div class="card-body">
+							<h5 class="card-title">@book.Title</h5>
+							<p class="card-text text-muted">@book.Author?.Name</p>
+							<div class="mb-2">
+								<span class="badge bg-warning text-dark">⭐ @avgRating.ToString("F1")</span>
+							</div>
+							<a href="@Url.Action("Details", new { id = book.Id })" class="btn btn-primary btn-sm">View Details</a>
+							<a href="@Url.Action("RemoveFromCollection", new { bookId = book.Id, collectionId = Model.Id })" 
+							   class="btn btn-danger btn-sm" onclick="return confirm('Remove from collection?')">Remove</a>
+						</div>
+					</div>
+				</div>
+			}
+		</div>
+	}
+	else
+	{
+		<div class="alert alert-info">
+			<p>This collection is empty. <a href="@Url.Action("Index")">Browse books</a> and add them to this collection!</p>
+		</div>
+	}
+
+	<div class="mt-4">
+		<a href="@Url.Action("MyCollections")" class="btn btn-secondary">Back to Collections</a>
+		<a href="@Url.Action("Index")" class="btn btn-secondary">Back to Books</a>
+	</div>
+</div>

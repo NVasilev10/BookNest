@@ -39,5 +39,8 @@ namespace BookNest.Models
 
         // Reviews relationship
         public List<Review> Reviews { get; set; } = new();
+
+        // Collections relationship
+        public ICollection<BookCollection> Collections { get; set; } = new List<BookCollection>();
     }
 }

@@ -24,9 +24,43 @@
 	</div>
 
 	<div>
+		<a asp-action="Statistics" class="btn btn-info me-2">
+			📊 Statistics
+		</a>
+		<a asp-action="MyRatings" class="btn btn-secondary me-2">
+			👤 My Ratings
+		</a>
+		<a asp-action="MyCollections" class="btn btn-outline-primary me-2">
+			📚 My Collections
+		</a>
 		<a asp-action="Favorites" class="btn btn-warning me-2">
 			⭐ My Favorites (@ViewData["FavoritesCount"])
 		</a>
+		<div class="btn-group me-2" role="group">
+			<button id="exportBtn" type="button" class="btn btn-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+				📥 Export
+			</button>
+			<ul class="dropdown-menu" aria-labelledby="exportBtn">
+				<li>
+					<a class="dropdown-item" asp-action="ExportAsCsv" 
+					   asp-route-searchString="@ViewData["SearchString"]"
+					   asp-route-authorId="@ViewData["AuthorId"]"
+					   asp-route-categoryId="@ViewData["CategoryId"]"
+					   asp-route-favoritesOnly="@ViewData["FavoritesOnly"]">
+						📄 Export as CSV
+					</a>
+				</li>
+				<li>
+					<a class="dropdown-item" asp-action="ExportAsJson"
+					   asp-route-searchString="@ViewData["SearchString"]"
+					   asp-route-authorId="@ViewData["AuthorId"]"
+					   asp-route-categoryId="@ViewData["CategoryId"]"
+					   asp-route-favoritesOnly="@ViewData["FavoritesOnly"]">
+						📋 Export as JSON
+					</a>
+				</li>
+			</ul>
+		</div>
 		<a asp-controller="Books" asp-action="Create" class="btn btn-success">
 			➕ Add New Book
 		</a>
@@ -65,6 +99,20 @@
 					class="form-select"
 					asp-items="ViewBag.Categories">
 				<option value="">🏷️ All Categories</option>
+			</select>
+		</div>
+
+		<!-- Sort By -->
+		<div class="col-md-2">
+			@{
+				var currentSort = ViewData["SortBy"]?.ToString() ?? "title";
+			}
+			<select name="sortBy" class="form-select">
+				<option value="title" selected="@(currentSort == "title" ? "selected" : null)">Sort: Title</option>
+				<option value="rating_high" selected="@(currentSort == "rating_high" ? "selected" : null)">⭐ Highest Rated</option>
+				<option value="rating_low" selected="@(currentSort == "rating_low" ? "selected" : null)">⭐ Lowest Rated</option>
+				<option value="newest" selected="@(currentSort == "newest" ? "selected" : null)">📅 Newest First</option>
+				<option value="oldest" selected="@(currentSort == "oldest" ? "selected" : null)">📅 Oldest First</option>
 			</select>
 		</div>
 
@@ -234,7 +282,10 @@ else
 					<a class="page-link" 
 					   asp-action="Index"
 					   asp-route-searchString="@ViewData["SearchString"]"
+					   asp-route-authorId="@ViewData["AuthorId"]"
+					   asp-route-categoryId="@ViewData["CategoryId"]"
 					   asp-route-favoritesOnly="@ViewData["FavoritesOnly"]"
+					   asp-route-sortBy="@ViewData["SortBy"]"
 					   asp-route-pageNumber="@(((int)ViewData["PageNumber"]) - 1)">
 						← Previous
 					</a>

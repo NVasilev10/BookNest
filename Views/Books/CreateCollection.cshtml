@@ -1,0 +1,40 @@
+@model BookNest.Models.BookCollection
+
+@{
+	ViewData["Title"] = "Create New Collection";
+}
+
+<div class="container mt-4">
+	<div class="row">
+		<div class="col-md-6 offset-md-3">
+			<h1>Create New Collection</h1>
+
+			<form asp-action="CreateCollection" method="post" class="mt-4">
+				<div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+				<div class="mb-3">
+					<label asp-for="Name" class="form-label">Collection Name</label>
+					<input asp-for="Name" class="form-control" placeholder="e.g., My Favorites, Science Fiction..." />
+					<span asp-validation-for="Name" class="text-danger"></span>
+				</div>
+
+				<div class="mb-3">
+					<label asp-for="Description" class="form-label">Description (Optional)</label>
+					<textarea asp-for="Description" class="form-control" rows="4" placeholder="Add a description for this collection..."></textarea>
+					<span asp-validation-for="Description" class="text-danger"></span>
+				</div>
+
+				<div class="d-grid gap-2">
+					<button type="submit" class="btn btn-primary">Create Collection</button>
+					<a href="@Url.Action("MyCollections")" class="btn btn-secondary">Cancel</a>
+				</div>
+			</form>
+		</div>
+	</div>
+</div>
+
+@section Scripts {
+	@{
+		await Html.RenderPartialAsync("_ValidationScriptsPartial");
+	}
+}

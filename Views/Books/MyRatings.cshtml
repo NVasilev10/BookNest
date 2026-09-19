@@ -1,0 +1,143 @@
+@model IEnumerable<dynamic>
+
+@{
+	ViewData["Title"] = "My Ratings";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+	<div>
+		<h1>👤 My Ratings</h1>
+		<p class="text-muted mb-0">Books you've rated</p>
+		<small class="text-info">
+			📚 <strong>@ViewData["RatingCount"]</strong> book(s) rated
+		</small>
+	</div>
+	<div>
+		<a asp-action="Index" class="btn btn-secondary">
+			← Back to Books
+		</a>
+	</div>
+</div>
+
+<!-- Sort Options -->
+<div class="row mb-4">
+	<div class="col-md-4">
+		@{
+			var currentSortBy = ViewData["SortBy"]?.ToString() ?? "recent";
+		}
+		<select class="form-select" onchange="location.href='@Url.Action("MyRatings", "Books")?sortBy=' + this.value;">
+			<option value="recent" selected="@(currentSortBy == "recent" ? "selected" : null)">📅 Most Recent</option>
+			<option value="oldest" selected="@(currentSortBy == "oldest" ? "selected" : null)">📅 Oldest First</option>
+			<option value="highest" selected="@(currentSortBy == "highest" ? "selected" : null)">⭐ Highest Rated by Me</option>
+			<option value="lowest" selected="@(currentSortBy == "lowest" ? "selected" : null)">⭐ Lowest Rated by Me</option>
+		</select>
+	</div>
+</div>
+
+@if (!Model.Any())
+{
+	<div class="alert alert-info text-center p-4">
+		<h4>📚 No rated books yet!</h4>
+		<p>Start rating books to track your reading preferences.</p>
+		<a asp-action="Index" class="btn btn-primary">
+			🔍 Browse Books
+		</a>
+	</div>
+}
+else
+{
+	<div class="row">
+		@foreach (var item in Model)
+		{
+			<div class="col-md-6 col-lg-4 mb-4">
+				<div class="card shadow-sm h-100">
+					<!-- Book Image -->
+					@if (!string.IsNullOrEmpty(item.Book.ImageUrl))
+					{
+						<img src="@item.Book.ImageUrl"
+							 class="card-img-top"
+							 alt="@item.Book.Title"
+							 style="height: 300px; object-fit: cover;" />
+					}
+					else
+					{
+						<div class="d-flex align-items-center justify-content-center bg-light"
+							 style="height: 300px; font-size: 80px;">
+							📚
+						</div>
+					}
+
+					<div class="card-body d-flex flex-column">
+						<h4 class="card-title">
+							@item.Book.Title
+						</h4>
+
+						<p class="text-muted mb-2">
+							✍️ @item.Book.Author?.Name
+						</p>
+
+						<p class="mb-2">
+							🏷️ @item.Book.Category?.Name
+						</p>
+
+						<!-- My Rating -->
+						<div class="mb-3">
+							<strong>My Rating:</strong>
+							<div class="mt-1">
+								@for (int i = 1; i <= 5; i++)
+								{
+									if (i <= item.MyRating)
+									{
+										<span style="color: #FFD700; font-size: 1.2rem;">★</span>
+									}
+									else
+									{
+										<span style="color: #CCC; font-size: 1.2rem;">★</span>
+									}
+								}
+								<span class="badge bg-info ms-2">@item.MyRating/5</span>
+							</div>
+						</div>
+
+						<!-- Community Rating -->
+						<div class="mb-3">
+							<strong>Community Average:</strong>
+							<span class="badge bg-success">@Math.Round(item.AverageRating, 2)/5</span>
+							<span class="text-muted small">(@item.TotalReviews reviews)</span>
+						</div>
+
+						<!-- My Comment -->
+						@if (!string.IsNullOrEmpty(item.MyComment))
+						{
+							<div class="mb-3">
+								<strong>My Comment:</strong>
+								<p class="text-muted small" style="font-style: italic;">
+									"@item.MyComment"
+								</p>
+							</div>
+						}
+
+						<!-- Date Rated -->
+						<p class="text-muted small mb-3">
+							📅 Rated on @item.MyRatingDate.ToString("MMM dd, yyyy")
+						</p>
+
+						<div class="mt-auto pt-3">
+							<!-- View Details -->
+							<a asp-action="Details" asp-route-id="@item.Book.Id"
+							   class="btn btn-outline-primary btn-sm">
+								👀 View Book
+							</a>
+
+							<!-- Edit Rating (if desired) -->
+							<a asp-action="Details" asp-route-id="@item.Book.Id"
+							   class="btn btn-outline-warning btn-sm">
+								✏️ Edit Rating
+							</a>
+						</div>
+					</div>
+				</div>
+			</div>
+		}
+	</div>
+}

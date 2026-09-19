@@ -1,0 +1,58 @@
+@model IEnumerable<BookNest.Models.BookCollection>
+
+@{
+	ViewData["Title"] = "My Collections";
+}
+
+<div class="container mt-4">
+	<div class="row mb-4">
+		<div class="col-md-8">
+			<h1>📚 My Collections</h1>
+		</div>
+		<div class="col-md-4 text-end">
+			<a href="@Url.Action("CreateCollection")" class="btn btn-primary">+ New Collection</a>
+		</div>
+	</div>
+
+	@if (Model.Any())
+	{
+		<div class="row">
+			@foreach (var collection in Model.OrderByDescending(c => c.CreatedDate))
+			{
+				<div class="col-md-6 mb-4">
+					<div class="card h-100">
+						<div class="card-body">
+							<h5 class="card-title">@collection.Name</h5>
+							@if (!string.IsNullOrEmpty(collection.Description))
+							{
+								<p class="card-text text-muted">@collection.Description</p>
+							}
+							<p class="card-text">
+								<small class="text-muted">
+									📖 @collection.Books.Count books | 
+									📅 Created @collection.CreatedDate.ToString("dd.MM.yyyy")
+								</small>
+							</p>
+						</div>
+						<div class="card-footer bg-light">
+							<a href="@Url.Action("CollectionBooks", new { id = collection.Id })" class="btn btn-info btn-sm">View Books</a>
+							<a href="@Url.Action("EditCollection", new { id = collection.Id })" class="btn btn-warning btn-sm">Edit</a>
+							<a href="@Url.Action("DeleteCollection", new { id = collection.Id })" 
+							   onclick="return confirm('Are you sure?')" class="btn btn-danger btn-sm">Delete</a>
+						</div>
+					</div>
+				</div>
+			}
+		</div>
+	}
+	else
+	{
+		<div class="alert alert-info">
+			<p>You don't have any collections yet. <a href="@Url.Action("CreateCollection")">Create your first collection</a>!</p>
+		</div>
+	}
+
+	<div class="mt-4">
+		<a href="@Url.Action("Index")" class="btn btn-secondary">Back to Books</a>
+	</div>
+</div>

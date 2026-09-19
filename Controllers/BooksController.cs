@@ -6,7 +6,7 @@ using BookNest.Models;
 
 namespace BookNest.Controllers
 {
-    public class BooksController : Controller
+    public partial class BooksController : Controller
     {
         private readonly ApplicationDbContext _context;
 
@@ -21,6 +21,7 @@ namespace BookNest.Controllers
             int? authorId,
             int? categoryId,
             bool favoritesOnly = false,
+            string sortBy = "title",
             int pageNumber = 1,
             int pageSize = 6)
         {
@@ -31,6 +32,7 @@ namespace BookNest.Controllers
             var books = _context.Books
                 .Include(b => b.Author)
                 .Include(b => b.Category)
+                .Include(b => b.Reviews)
                 .AsQueryable();
 
             // 🔍 Advanced Search - search by title, description, and author name
@@ -62,8 +64,17 @@ namespace BookNest.Controllers
                 books = books.Where(b => b.IsFavorite);
             }
 
-            // Sort by title
-            var sortedBooks = books.OrderBy(b => b.Title);
+            // 📊 Apply sorting
+            IQueryable<Book> sortedBooks = sortBy?.ToLower() switch
+            {
+                "rating_high" => books.OrderByDescending(b => 
+                    b.Reviews.Any() ? b.Reviews.Average(r => r.Rating) : 0),
+                "rating_low" => books.OrderBy(b => 
+                    b.Reviews.Any() ? b.Reviews.Average(r => r.Rating) : 0),
+                "newest" => books.OrderByDescending(b => b.PublishedYear),
+                "oldest" => books.OrderBy(b => b.PublishedYear),
+                _ => books.OrderBy(b => b.Title) // Default: sort by title
+            };
 
             // Get total count before pagination
             var totalCount = await sortedBooks.CountAsync();
@@ -98,6 +109,7 @@ namespace BookNest.Controllers
 
             ViewData["SearchString"] = searchString;
             ViewData["FavoritesOnly"] = favoritesOnly;
+            ViewData["SortBy"] = sortBy;
             ViewData["ResultCount"] = totalCount;
             ViewData["FavoritesCount"] = favoritesCount;
             ViewData["PageNumber"] = pageNumber;
@@ -134,12 +146,20 @@ namespace BookNest.Controllers
             var book = await _context.Books
                 .Include(b => b.Author)
                 .Include(b => b.Category)
+                .Include(b => b.Reviews.OrderByDescending(r => r.CreatedDate))
                 .FirstOrDefaultAsync(m => m.Id == id);
 
             if (book == null)
             {
                 return NotFound();
             }
+
+            // Calculate average rating
+            var averageRating = book.Reviews.Any() 
+                ? book.Reviews.Average(r => r.Rating) 
+                : 0;
+            ViewData["AverageRating"] = averageRating;
+            ViewData["ReviewCount"] = book.Reviews.Count;
 
             return View(book);
         }
@@ -327,6 +347,80 @@ namespace BookNest.Controllers
         private bool BookExists(int id)
         {
             return _context.Books.Any(e => e.Id == id);
+        }
+
+        // POST: Books/CreateReview
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CreateReview(int bookId, [Bind("Rating,Comment")] Review review)
+        {
+            review.BookId = bookId;
+
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                    _context.Add(review);
+                    await _context.SaveChangesAsync();
+                }
+                catch (Exception ex)
+                {
+                    ModelState.AddModelError("", $"Error saving review: {ex.Message}");
+                }
+            }
+
+            return RedirectToAction(nameof(Details), new { id = bookId });
+        }
+
+        // GET: Books/Statistics
+        public async Task<IActionResult> Statistics()
+        {
+            // Total counts
+            var totalBooks = await _context.Books.CountAsync();
+            var totalAuthors = await _context.Authors.CountAsync();
+            var totalCategories = await _context.Categories.CountAsync();
+            var totalFavorites = await _context.Books.CountAsync(b => b.IsFavorite);
+            var totalReviews = await _context.Reviews.CountAsync();
+
+            // Popular authors (by book count)
+            var popularAuthors = await _context.Authors
+                .Include(a => a.Books)
+                .OrderByDescending(a => a.Books.Count)
+                .Take(5)
+                .ToListAsync();
+
+            // Popular categories (by book count)
+            var popularCategories = await _context.Categories
+                .Include(c => c.Books)
+                .OrderByDescending(c => c.Books.Count)
+                .Take(5)
+                .ToListAsync();
+
+            // Top rated books
+            var topRatedBooks = await _context.Books
+                .Include(b => b.Reviews)
+                .Include(b => b.Author)
+                .Where(b => b.Reviews.Any())
+                .OrderByDescending(b => b.Reviews.Average(r => r.Rating))
+                .Take(5)
+                .ToListAsync();
+
+            // Average rating across all books
+            var averageRating = await _context.Reviews.AnyAsync() 
+                ? _context.Reviews.Average(r => r.Rating) 
+                : 0;
+
+            ViewData["TotalBooks"] = totalBooks;
+            ViewData["TotalAuthors"] = totalAuthors;
+            ViewData["TotalCategories"] = totalCategories;
+            ViewData["TotalFavorites"] = totalFavorites;
+            ViewData["TotalReviews"] = totalReviews;
+            ViewData["AverageRating"] = averageRating;
+            ViewData["PopularAuthors"] = popularAuthors;
+            ViewData["PopularCategories"] = popularCategories;
+            ViewData["TopRatedBooks"] = topRatedBooks;
+
+            return View();
         }
     }
 }

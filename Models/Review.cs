@@ -18,6 +18,17 @@ namespace BookNest.Models
         [Display(Name = "Дата на рецензия")]
         public DateTime CreatedDate { get; set; } = DateTime.Now;
 
+        // 🚩 Moderation fields
+        [Display(Name = "Одобрено")]
+        public bool IsApproved { get; set; } = true; // Auto-approve for now
+
+        [Display(Name = "Е флаговано")]
+        public bool IsFlagged { get; set; } = false;
+
+        [StringLength(200, ErrorMessage = "Причината за флаговане не може да превишава 200 символа.")]
+        [Display(Name = "Причина за флаговане")]
+        public string? FlagReason { get; set; }
+
         // Foreign Key
         [Required]
         [Display(Name = "Книга")]
