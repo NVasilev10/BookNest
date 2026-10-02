@@ -173,7 +173,7 @@ else
 		@foreach (var item in Model)
 		{
 			<div class="col-md-6 col-lg-4 mb-4">
-				<div class="card shadow-sm h-100">
+				<div class="card shadow-sm h-100 border-0">
 					<!-- 🖼️ Book Image -->
 					@if (!string.IsNullOrEmpty(item.ImageUrl))
 					{
@@ -191,101 +191,119 @@ else
 					}
 
 					<div class="card-body d-flex flex-column">
-						<!-- ⭐ Favorite Badge -->
-						@if (item.IsFavorite)
-						{
-							<div class="mb-2">
+						<!-- Badges Row -->
+						<div class="mb-3 d-flex flex-wrap gap-2">
+							<!-- ⭐ Favorite Badge -->
+							@if (item.IsFavorite)
+							{
 								<span class="badge bg-warning text-dark">
 									⭐ Favorite
 								</span>
-							</div>
-						}
+							}
 
-						<!-- 📊 Reading Status Badge -->
-						<div class="mb-2">
-							<span class="badge bg-secondary">
-								@{
-									var statusBadge = item.Status switch
-									{
-										BookNest.Models.ReadingStatus.WantToRead => "Want to Read 📗",
-										BookNest.Models.ReadingStatus.Reading => "Reading 📖",
-										BookNest.Models.ReadingStatus.Finished => "Finished ✅",
-										_ => "Unknown"
-									};
-									var statusColor = item.Status switch
-									{
-										BookNest.Models.ReadingStatus.WantToRead => "bg-info",
-										BookNest.Models.ReadingStatus.Reading => "bg-warning",
-										BookNest.Models.ReadingStatus.Finished => "bg-success",
-										_ => "bg-secondary"
-									};
-								}
-								<span class="badge @statusColor">@statusBadge</span>
+							<!-- 📊 Reading Status Badge - Modern -->
+							@{
+								var statusClass = item.Status switch
+								{
+									BookNest.Models.ReadingStatus.WantToRead => "badge-want-to-read",
+									BookNest.Models.ReadingStatus.Reading => "badge-reading",
+									BookNest.Models.ReadingStatus.Finished => "badge-finished",
+									_ => "badge bg-secondary"
+								};
+
+								var statusText = item.Status switch
+								{
+									BookNest.Models.ReadingStatus.WantToRead => "📗 Want to Read",
+									BookNest.Models.ReadingStatus.Reading => "📖 Reading",
+									BookNest.Models.ReadingStatus.Finished => "✅ Finished",
+									_ => "Unknown"
+								};
+							}
+
+							<span class="@statusClass">
+								@statusText
 							</span>
 						</div>
 
-						<h4 class="card-title">
-							@item.Title
-						</h4>
+						<!-- Title -->
+						<h5 class="card-title">
+							<a asp-action="Details" asp-route-id="@item.Id" style="text-decoration: none; color: inherit;">
+								@item.Title
+							</a>
+						</h5>
 
-						<p class="text-muted mb-2">
-							✍️ @item.Author?.Name
-						</p>
-
-						<p class="mb-2">
+						<!-- Author & Category -->
+						<p class="card-text small text-muted mb-3">
+							✍️ @item.Author?.Name<br />
 							🏷️ @item.Category?.Name
 						</p>
 
-						<p class="text-muted small">
-							📅 @item.PublishedYear
-						</p>
+						<!-- 📊 Progress Tracker (if has pages) -->
+						@if (item.TotalPages.HasValue && item.TotalPages > 0)
+						{
+							<div class="progress-tracker mb-3">
+								<div class="progress-tracker-title">
+									📖 Reading Progress
+								</div>
+								<div class="progress">
+									<div class="progress-bar" role="progressbar" 
+										 style="width: @(item.ProgressPercentage)%;" 
+										 aria-valuenow="@item.ProgressPercentage" 
+										 aria-valuemin="0" 
+										 aria-valuemax="100">
+										@item.ProgressPercentage%
+									</div>
+								</div>
+								<div class="progress-tracker-stats">
+									<span>📄 @item.PagesRead / @item.TotalPages pages</span>
+									<span class="fw-bold">@item.ProgressPercentage%</span>
+								</div>
+							</div>
+						}
 
+						<!-- 📅 Reading Dates -->
+						@if (item.StartDate.HasValue || item.FinishDate.HasValue)
+						{
+							<div class="reading-dates mb-3">
+								@if (item.StartDate.HasValue)
+								{
+									<div class="date-badge start-date">
+										<div class="date-badge-label">📅 Started</div>
+										<div class="date-badge-value">@item.StartDate.Value.ToString("MMM d, yyyy")</div>
+									</div>
+								}
+								@if (item.FinishDate.HasValue)
+								{
+									<div class="date-badge finish-date">
+										<div class="date-badge-label">✅ Finished</div>
+										<div class="date-badge-value">@item.FinishDate.Value.ToString("MMM d, yyyy")</div>
+									</div>
+								}
+							</div>
+						}
+
+						<!-- Description (truncated) -->
 						@if (!string.IsNullOrEmpty(item.Description))
 						{
-							<p class="card-text">
-								@(item.Description.Length > 120
-									? item.Description.Substring(0, 120) + "..."
-									: item.Description)
+							<p class="card-text small text-muted mb-3">
+								@(item.Description.Length > 100 ? item.Description.Substring(0, 100) + "..." : item.Description)
 							</p>
 						}
 
-						<div class="mt-auto pt-3">
-							<!-- ⭐ Toggle Favorite -->
-							<form asp-action="ToggleFavorite"
-								  asp-route-id="@item.Id"
-								  method="post"
-								  class="d-inline">
-								@Html.AntiForgeryToken()
+						<!-- Publication Year -->
+						<p class="card-text small text-secondary mb-auto">
+							📅 Published: @item.PublishedYear
+						</p>
 
-								@if (item.IsFavorite)
-								{
-									<button type="submit" class="btn btn-warning btn-sm">
-										⭐ Remove Favorite
-									</button>
-								}
-								else
-								{
-									<button type="submit" class="btn btn-outline-warning btn-sm">
-										☆ Add Favorite
-									</button>
-								}
-							</form>
-
-							<!-- Details -->
-							<a asp-action="Details" asp-route-id="@item.Id"
-							   class="btn btn-outline-primary btn-sm">
-								👁️ View
+						<!-- Action Buttons -->
+						<div class="btn-group-vertical w-100 mt-3" role="group">
+							<a asp-action="Details" asp-route-id="@item.Id" class="btn btn-outline-primary btn-sm">
+								👁️ View Details
 							</a>
-
-							<!-- Edit -->
-							<a asp-action="Edit" asp-route-id="@item.Id"
-							   class="btn btn-outline-info btn-sm">
+							<a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-outline-warning btn-sm">
 								✏️ Edit
 							</a>
-
-							<!-- Delete -->
-							<a asp-action="Delete" asp-route-id="@item.Id"
-							   class="btn btn-outline-danger btn-sm">
+							<a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-outline-danger btn-sm">
 								🗑️ Delete
 							</a>
 						</div>
@@ -294,133 +312,4 @@ else
 			</div>
 		}
 	</div>
-
-	<!-- 📄 Pagination -->
-	<nav aria-label="Page navigation" class="d-flex justify-content-center mt-5 mb-4">
-		<ul class="pagination">
-			<!-- Previous Page -->
-			@if (ViewData["HasPreviousPage"] as bool? == true)
-			{
-				<li class="page-item">
-					<a class="page-link" 
-					   asp-action="Index"
-					   asp-route-searchString="@ViewData["SearchString"]"
-					   asp-route-authorId="@ViewData["AuthorId"]"
-					   asp-route-categoryId="@ViewData["CategoryId"]"
-					   asp-route-favoritesOnly="@ViewData["FavoritesOnly"]"
-					   asp-route-sortBy="@ViewData["SortBy"]"
-					   asp-route-pageNumber="@(((int)ViewData["PageNumber"]) - 1)">
-						← Previous
-					</a>
-				</li>
-			}
-			else
-			{
-				<li class="page-item disabled">
-					<span class="page-link">← Previous</span>
-				</li>
-			}
-
-			<!-- Page Numbers -->
-			@{
-				int currentPage = (int)ViewData["PageNumber"];
-				int totalPages = (int)ViewData["TotalPages"];
-				int startPage = Math.Max(1, currentPage - 2);
-				int endPage = Math.Min(totalPages, currentPage + 2);
-
-				if (startPage > 1)
-				{
-					<li class="page-item">
-						<a class="page-link" 
-						   asp-action="Index"
-						   asp-route-searchString="@ViewData["SearchString"]"
-						   asp-route-favoritesOnly="@ViewData["FavoritesOnly"]"
-						   asp-route-pageNumber="1">
-							1
-						</a>
-					</li>
-					if (startPage > 2)
-					{
-						<li class="page-item disabled"><span class="page-link">...</span></li>
-					}
-				}
-
-				for (int i = startPage; i <= endPage; i++)
-				{
-					if (i == currentPage)
-					{
-						<li class="page-item active">
-							<span class="page-link">
-								@i
-								<span class="visually-hidden">(current)</span>
-							</span>
-						</li>
-					}
-					else
-					{
-						<li class="page-item">
-							<a class="page-link" 
-							   asp-action="Index"
-							   asp-route-searchString="@ViewData["SearchString"]"
-							   asp-route-favoritesOnly="@ViewData["FavoritesOnly"]"
-							   asp-route-pageNumber="@i">
-								@i
-							</a>
-						</li>
-					}
-				}
-
-				if (endPage < totalPages)
-				{
-					if (endPage < totalPages - 1)
-					{
-						<li class="page-item disabled"><span class="page-link">...</span></li>
-					}
-					<li class="page-item">
-						<a class="page-link" 
-						   asp-action="Index"
-						   asp-route-searchString="@ViewData["SearchString"]"
-						   asp-route-favoritesOnly="@ViewData["FavoritesOnly"]"
-						   asp-route-pageNumber="@totalPages">
-							@totalPages
-						</a>
-					</li>
-				}
-			}
-
-			<!-- Next Page -->
-			@if (ViewData["HasNextPage"] as bool? == true)
-			{
-				<li class="page-item">
-					<a class="page-link" 
-					   asp-action="Index"
-					   asp-route-searchString="@ViewData["SearchString"]"
-					   asp-route-favoritesOnly="@ViewData["FavoritesOnly"]"
-					   asp-route-pageNumber="@(((int)ViewData["PageNumber"]) + 1)">
-						Next →
-					</a>
-				</li>
-			}
-			else
-			{
-				<li class="page-item disabled">
-					<span class="page-link">Next →</span>
-				</li>
-			}
-		</ul>
-	</nav>
-
-	<!-- Page Info -->
-	<div class="text-center mb-4">
-		<small class="text-muted">
-			Page <strong>@ViewData["PageNumber"]</strong> of <strong>@ViewData["TotalPages"]</strong>
-			| Showing <strong>@Model.Count()</strong> of <strong>@ViewData["ResultCount"]</strong> result(s)
-		</small>
-	</div>
-}
-
-@section Scripts {
-	@{
-		await Html.RenderPartialAsync("_ValidationScriptsPartial");
-	}
 }
