@@ -158,6 +158,108 @@
 
 </div>
 
+<!-- 📖 Reading Progress Statistics -->
+<div class="row text-center mb-5 mt-4">
+
+    <!-- Currently Reading -->
+    <div class="col-md-4 mb-4">
+
+        <div class="card shadow-sm h-100 border-warning">
+
+            <div class="card-body">
+
+                <h1 class="display-4">📖</h1>
+
+                <h2 class="fw-bold text-warning">
+                    @ViewBag.BooksReading
+                </h2>
+
+                <p class="text-muted">
+                    Currently Reading
+                </p>
+
+                <a asp-controller="Books"
+                   asp-action="Index"
+                   class="btn btn-outline-warning">
+                    View Reading
+                </a>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- Finished Reading -->
+    <div class="col-md-4 mb-4">
+
+        <div class="card shadow-sm h-100 border-success">
+
+            <div class="card-body">
+
+                <h1 class="display-4">✅</h1>
+
+                <h2 class="fw-bold text-success">
+                    @ViewBag.BooksFinished
+                </h2>
+
+                <p class="text-muted">
+                    Books Finished
+                </p>
+
+                <a asp-controller="Books"
+                   asp-action="Index"
+                   class="btn btn-outline-success">
+                    View Finished
+                </a>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- Want to Read -->
+    <div class="col-md-4 mb-4">
+
+        <div class="card shadow-sm h-100 border-info">
+
+            <div class="card-body">
+
+                <h1 class="display-4">📗</h1>
+
+                <h2 class="fw-bold text-info">
+                    @ViewBag.BooksWantToRead
+                </h2>
+
+                <p class="text-muted">
+                    Want to Read
+                </p>
+
+                <a asp-controller="Books"
+                   asp-action="Index"
+                   class="btn btn-outline-info">
+                    View Wishlist
+                </a>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<!-- 📊 Total Pages Read -->
+<div class="alert alert-info text-center p-4" role="alert">
+
+    <h4 class="alert-heading">📊 Reading Achievement</h4>
+
+    <p class="mb-0">
+        <strong class="display-5">@ViewBag.TotalPagesRead</strong> total pages read across all books! 🎉
+    </p>
+
+</div>
 
 <div class="text-center text-muted mt-4">
 

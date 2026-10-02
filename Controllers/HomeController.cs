@@ -25,6 +25,20 @@ namespace BookNest.Controllers
 
             ViewBag.CategoriesCount = await _context.Categories.CountAsync();
 
+            // 📊 Reading Progress Statistics
+            ViewBag.BooksReading = await _context.Books
+                .CountAsync(b => b.Status == ReadingStatus.Reading);
+
+            ViewBag.BooksFinished = await _context.Books
+                .CountAsync(b => b.Status == ReadingStatus.Finished);
+
+            ViewBag.BooksWantToRead = await _context.Books
+                .CountAsync(b => b.Status == ReadingStatus.WantToRead);
+
+            // Total pages read across all books
+            ViewBag.TotalPagesRead = await _context.Books
+                .SumAsync(b => b.PagesRead);
+
             // Get recent books (last 6 added)
             var recentBooks = await _context.Books
                 .Include(b => b.Author)

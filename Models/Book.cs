@@ -2,6 +2,18 @@
 
 namespace BookNest.Models
 {
+    public enum ReadingStatus
+    {
+        [Display(Name = "Искам да чета")]
+        WantToRead = 0,
+
+        [Display(Name = "Чета")]
+        Reading = 1,
+
+        [Display(Name = "Прочетена")]
+        Finished = 2
+    }
+
     public class Book
     {
         public int Id { get; set; }
@@ -37,10 +49,39 @@ namespace BookNest.Models
         public int CategoryId { get; set; }
         public Category Category { get; set; } = null!;
 
+        // Reading Progress Tracking
+        [Display(Name = "Статус")]
+        public ReadingStatus Status { get; set; } = ReadingStatus.WantToRead;
+
+        [Display(Name = "Общо страни")]
+        [Range(1, 10000, ErrorMessage = "Броят на страниците трябва да е между 1 и 10000.")]
+        public int? TotalPages { get; set; }
+
+        [Display(Name = "Прочетени страни")]
+        [Range(0, 10000, ErrorMessage = "Броят на прочетените страни трябва да е между 0 и 10000.")]
+        public int PagesRead { get; set; } = 0;
+
+        [Display(Name = "Дата на начало")]
+        public DateTime? StartDate { get; set; }
+
+        [Display(Name = "Дата на завършване")]
+        public DateTime? FinishDate { get; set; }
+
         // Reviews relationship
         public List<Review> Reviews { get; set; } = new();
 
         // Collections relationship
         public ICollection<BookCollection> Collections { get; set; } = new List<BookCollection>();
+
+        // Helper property to calculate progress percentage
+        public int ProgressPercentage
+        {
+            get
+            {
+                if (TotalPages == null || TotalPages == 0)
+                    return 0;
+                return (int)((PagesRead / (double)TotalPages) * 100);
+            }
+        }
     }
 }

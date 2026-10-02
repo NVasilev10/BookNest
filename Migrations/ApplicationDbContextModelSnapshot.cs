@@ -77,19 +77,34 @@ namespace BookNest.Migrations
                         .HasMaxLength(2000)
                         .HasColumnType("nvarchar(2000)");
 
+                    b.Property<DateTime?>("FinishDate")
+                        .HasColumnType("datetime2");
+
                     b.Property<string>("ImageUrl")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("IsFavorite")
                         .HasColumnType("bit");
 
+                    b.Property<int>("PagesRead")
+                        .HasColumnType("int");
+
                     b.Property<int>("PublishedYear")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("StartDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("Status")
                         .HasColumnType("int");
 
                     b.Property<string>("Title")
                         .IsRequired()
                         .HasMaxLength(150)
                         .HasColumnType("nvarchar(150)");
+
+                    b.Property<int?>("TotalPages")
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
 

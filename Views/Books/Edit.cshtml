@@ -66,6 +66,75 @@
             </div>
 
             <div class="mb-3">
+                <label asp-for="TotalPages" class="form-label">
+                    📖 Total Pages
+                </label>
+
+                <input asp-for="TotalPages"
+                       class="form-control"
+                       type="number"
+                       placeholder="300" />
+
+                <span asp-validation-for="TotalPages"
+                      class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="PagesRead" class="form-label">
+                    📌 Pages Read
+                </label>
+
+                <input asp-for="PagesRead"
+                       class="form-control"
+                       type="number"
+                       min="0" />
+
+                <span asp-validation-for="PagesRead"
+                      class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Status" class="form-label">
+                    📊 Reading Status
+                </label>
+
+                <select asp-for="Status" class="form-select">
+                    <option value="0">Want to Read</option>
+                    <option value="1">Reading</option>
+                    <option value="2">Finished</option>
+                </select>
+
+                <span asp-validation-for="Status"
+                      class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="StartDate" class="form-label">
+                    🚀 Start Date
+                </label>
+
+                <input asp-for="StartDate"
+                       class="form-control"
+                       type="date" />
+
+                <span asp-validation-for="StartDate"
+                      class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="FinishDate" class="form-label">
+                    ✅ Finish Date
+                </label>
+
+                <input asp-for="FinishDate"
+                       class="form-control"
+                       type="date" />
+
+                <span asp-validation-for="FinishDate"
+                      class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
                 <label asp-for="AuthorId" class="form-label">
                     ✍️ Author <span class="text-danger">*</span>
                 </label>

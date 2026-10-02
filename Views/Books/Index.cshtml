@@ -201,6 +201,29 @@ else
 							</div>
 						}
 
+						<!-- 📊 Reading Status Badge -->
+						<div class="mb-2">
+							<span class="badge bg-secondary">
+								@{
+									var statusBadge = item.Status switch
+									{
+										BookNest.Models.ReadingStatus.WantToRead => "Want to Read 📗",
+										BookNest.Models.ReadingStatus.Reading => "Reading 📖",
+										BookNest.Models.ReadingStatus.Finished => "Finished ✅",
+										_ => "Unknown"
+									};
+									var statusColor = item.Status switch
+									{
+										BookNest.Models.ReadingStatus.WantToRead => "bg-info",
+										BookNest.Models.ReadingStatus.Reading => "bg-warning",
+										BookNest.Models.ReadingStatus.Finished => "bg-success",
+										_ => "bg-secondary"
+									};
+								}
+								<span class="badge @statusColor">@statusBadge</span>
+							</span>
+						</div>
+
 						<h4 class="card-title">
 							@item.Title
 						</h4>

@@ -96,6 +96,55 @@
 
                 </div>
 
+                <!-- Reading Progress Section -->
+                <div class="mb-4 p-3 bg-light rounded">
+                    <h6>📊 Reading Progress</h6>
+
+                    <div class="mb-3">
+                        <span class="badge bg-info">
+                            @{
+                                var statusDisplay = Model.Status switch
+                                {
+                                    BookNest.Models.ReadingStatus.WantToRead => "Want to Read",
+                                    BookNest.Models.ReadingStatus.Reading => "Reading",
+                                    BookNest.Models.ReadingStatus.Finished => "Finished ✅",
+                                    _ => "Unknown"
+                                };
+                            }
+                            @statusDisplay
+                        </span>
+                    </div>
+
+                    @if (Model.TotalPages.HasValue && Model.TotalPages > 0)
+                    {
+                        <div class="mb-3">
+                            <small class="text-muted">
+                                Progress: @Model.PagesRead / @Model.TotalPages pages
+                                (@Model.ProgressPercentage%)
+                            </small>
+                            <div class="progress mt-2" style="height: 24px;">
+                                <div class="progress-bar bg-success" 
+                                     role="progressbar" 
+                                     style="width: @Model.ProgressPercentage%"
+                                     aria-valuenow="@Model.ProgressPercentage" 
+                                     aria-valuemin="0" 
+                                     aria-valuemax="100">
+                                    @Model.ProgressPercentage%
+                                </div>
+                            </div>
+                        </div>
+                    }
+
+                    @if (Model.StartDate.HasValue)
+                    {
+                        <small class="text-muted d-block">🚀 Started: @Model.StartDate?.ToString("dd/MM/yyyy")</small>
+                    }
+
+                    @if (Model.FinishDate.HasValue)
+                    {
+                        <small class="text-muted d-block">✅ Finished: @Model.FinishDate?.ToString("dd/MM/yyyy")</small>
+                    }
+                </div>
 
                 <div class="border-top pt-3">
 
