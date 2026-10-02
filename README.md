@@ -27,6 +27,10 @@ The application allows users to add, edit, view, search and delete books, as wel
 - Manage authors
 - Manage categories
 - Display statistics on the home page
+- **Track reading progress** (Want to Read, Currently Reading, Finished)
+- **Record pages read** and total pages for books
+- **Track reading dates** (start and finish dates)
+- **View reading statistics** (books reading, finished, want to read)
 - Server-side validation
 - Client-side validation
 - Responsive user interface using Bootstrap
@@ -95,6 +99,18 @@ The main entities are:
 - Category
 - Review (for rating and comments)
 - BookCollection (for organizing books into custom collections)
+
+**Book Properties include:**
+- Basic info: Title, Description, PublishedYear, ImageUrl
+- Relationships: Author, Category
+- Favorites: IsFavorite boolean flag
+- Reading Progress Tracking:
+  - Status (WantToRead, Reading, Finished)
+  - TotalPages (total number of pages in the book)
+  - PagesRead (number of pages read)
+  - StartDate (when reading started)
+  - FinishDate (when reading was completed)
+  - ProgressPercentage (calculated as PagesRead / TotalPages)
 
 Relationships:
 - A Book belongs to an Author and a Category
@@ -267,6 +283,12 @@ The home page provides an overview of the collection, including statistics such 
 - Number of favorite books
 - Number of authors
 - Number of categories
+- **Books by reading status:**
+  - Books user wants to read
+  - Books currently being read
+  - Books finished
+- **Reading statistics:**
+  - Total pages read across all books
 - Recent books (last 6 added)
 - Favorite books (latest 6)
 
