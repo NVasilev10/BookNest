@@ -196,33 +196,31 @@ else
 							<!-- ⭐ Favorite Badge -->
 							@if (item.IsFavorite)
 							{
-								<span class="badge bg-warning text-dark">
-									⭐ Favorite
-								</span>
+								<span class="badge bg-warning text-dark">⭐ Favorite</span>
 							}
 
-							<!-- 📊 Reading Status Badge - Modern -->
+							<!-- 📊 Reading Status Badge -->
 							@{
-								var statusClass = item.Status switch
-								{
-									BookNest.Models.ReadingStatus.WantToRead => "badge-want-to-read",
-									BookNest.Models.ReadingStatus.Reading => "badge-reading",
-									BookNest.Models.ReadingStatus.Finished => "badge-finished",
-									_ => "badge bg-secondary"
-								};
+								string statusClass = "badge bg-secondary";
+								string statusText = "Unknown";
 
-								var statusText = item.Status switch
+								if (item.Status == BookNest.Models.ReadingStatus.WantToRead)
 								{
-									BookNest.Models.ReadingStatus.WantToRead => "📗 Want to Read",
-									BookNest.Models.ReadingStatus.Reading => "📖 Reading",
-									BookNest.Models.ReadingStatus.Finished => "✅ Finished",
-									_ => "Unknown"
-								};
+									statusClass = "badge-want-to-read";
+									statusText = "📗 Want to Read";
+								}
+								else if (item.Status == BookNest.Models.ReadingStatus.Reading)
+								{
+									statusClass = "badge-reading";
+									statusText = "📖 Reading";
+								}
+								else if (item.Status == BookNest.Models.ReadingStatus.Finished)
+								{
+									statusClass = "badge-finished";
+									statusText = "✅ Finished";
+								}
 							}
-
-							<span class="@statusClass">
-								@statusText
-							</span>
+							<span class="@statusClass">@statusText</span>
 						</div>
 
 						<!-- Title -->
@@ -234,17 +232,15 @@ else
 
 						<!-- Author & Category -->
 						<p class="card-text small text-muted mb-3">
-							✍️ @item.Author?.Name<br />
-							🏷️ @item.Category?.Name
+							✍️ @(item.Author?.Name ?? "Unknown")<br />
+							🏷️ @(item.Category?.Name ?? "Unknown")
 						</p>
 
 						<!-- 📊 Progress Tracker (if has pages) -->
 						@if (item.TotalPages.HasValue && item.TotalPages > 0)
 						{
 							<div class="progress-tracker mb-3">
-								<div class="progress-tracker-title">
-									📖 Reading Progress
-								</div>
+								<div class="progress-tracker-title">📖 Reading Progress</div>
 								<div class="progress">
 									<div class="progress-bar" role="progressbar" 
 										 style="width: @(item.ProgressPercentage)%;" 
