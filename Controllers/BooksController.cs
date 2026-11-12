@@ -161,6 +161,10 @@ namespace BookNest.Controllers
             ViewData["AverageRating"] = averageRating;
             ViewData["ReviewCount"] = book.Reviews.Count;
 
+            // Get all collections for AddToCollection modal
+            var collections = await _context.BookCollections.ToListAsync();
+            ViewData["Collections"] = collections;
+
             return View(book);
         }
 
@@ -344,11 +348,6 @@ namespace BookNest.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        private bool BookExists(int id)
-        {
-            return _context.Books.Any(e => e.Id == id);
-        }
-
         // POST: Books/CreateReview
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -421,6 +420,123 @@ namespace BookNest.Controllers
             ViewData["TopRatedBooks"] = topRatedBooks;
 
             return View();
+        }
+
+        // GET: Books/ExportAsCsv
+        public async Task<IActionResult> ExportAsCsv(
+            string? searchString,
+            int? authorId,
+            int? categoryId,
+            bool favoritesOnly = false,
+            string sortBy = "title")
+        {
+            var books = _context.Books
+                .Include(b => b.Author)
+                .Include(b => b.Category)
+                .Include(b => b.Reviews)
+                .AsQueryable();
+
+            // Apply same filters as Index
+            if (!string.IsNullOrWhiteSpace(searchString))
+            {
+                var lowerSearch = searchString.ToLower();
+                books = books.Where(b =>
+                    b.Title.ToLower().Contains(lowerSearch) ||
+                    b.Description.ToLower().Contains(lowerSearch) ||
+                    b.Author.Name.ToLower().Contains(lowerSearch)
+                );
+            }
+
+            if (authorId.HasValue)
+            {
+                books = books.Where(b => b.AuthorId == authorId.Value);
+            }
+
+            if (categoryId.HasValue)
+            {
+                books = books.Where(b => b.CategoryId == categoryId.Value);
+            }
+
+            if (favoritesOnly)
+            {
+                books = books.Where(b => b.IsFavorite);
+            }
+
+            var booksToExport = await books.ToListAsync();
+
+            // Generate CSV
+            var csv = new System.Text.StringBuilder();
+            csv.AppendLine("Title,Author,Category,Published Year,Is Favorite,Average Rating");
+
+            foreach (var book in booksToExport)
+            {
+                var avgRating = book.Reviews.Any() ? book.Reviews.Average(r => r.Rating) : 0;
+                var line = $"\"{book.Title}\",\"{book.Author?.Name ?? "N/A"}\",\"{book.Category?.Name ?? "N/A"}\",{book.PublishedYear},{book.IsFavorite},{avgRating}";
+                csv.AppendLine(line);
+            }
+
+            var fileName = $"books_export_{DateTime.Now:yyyyMMdd_HHmmss}.csv";
+            return File(System.Text.Encoding.UTF8.GetBytes(csv.ToString()), "text/csv", fileName);
+        }
+
+        // GET: Books/ExportAsJson
+        public async Task<IActionResult> ExportAsJson(
+            string? searchString,
+            int? authorId,
+            int? categoryId,
+            bool favoritesOnly = false,
+            string sortBy = "title")
+        {
+            var books = _context.Books
+                .Include(b => b.Author)
+                .Include(b => b.Category)
+                .Include(b => b.Reviews)
+                .AsQueryable();
+
+            // Apply same filters as Index
+            if (!string.IsNullOrWhiteSpace(searchString))
+            {
+                var lowerSearch = searchString.ToLower();
+                books = books.Where(b =>
+                    b.Title.ToLower().Contains(lowerSearch) ||
+                    b.Description.ToLower().Contains(lowerSearch) ||
+                    b.Author.Name.ToLower().Contains(lowerSearch)
+                );
+            }
+
+            if (authorId.HasValue)
+            {
+                books = books.Where(b => b.AuthorId == authorId.Value);
+            }
+
+            if (categoryId.HasValue)
+            {
+                books = books.Where(b => b.CategoryId == categoryId.Value);
+            }
+
+            if (favoritesOnly)
+            {
+                books = books.Where(b => b.IsFavorite);
+            }
+
+            var booksToExport = await books.ToListAsync();
+
+            // Transform to export-friendly format
+            var exportData = booksToExport.Select(b => new
+            {
+                b.Id,
+                b.Title,
+                Author = b.Author?.Name ?? "N/A",
+                Category = b.Category?.Name ?? "N/A",
+                b.PublishedYear,
+                b.IsFavorite,
+                AverageRating = b.Reviews.Any() ? Math.Round(b.Reviews.Average(r => r.Rating), 2) : 0,
+                ReviewCount = b.Reviews.Count
+            }).ToList();
+
+            var json = System.Text.Json.JsonSerializer.Serialize(exportData, new System.Text.Json.JsonSerializerOptions { WriteIndented = true });
+            var fileName = $"books_export_{DateTime.Now:yyyyMMdd_HHmmss}.json";
+            return File(System.Text.Encoding.UTF8.GetBytes(json), "application/json", fileName);
         }
     }
 }

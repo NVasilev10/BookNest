@@ -76,17 +76,51 @@ namespace BookNest.Controllers
         }
 
         // GET: Books/MyRatings
-        public async Task<IActionResult> MyRatings()
+        public async Task<IActionResult> MyRatings(string sortBy = "recent")
         {
             var reviews = await _context.Reviews
                 .Include(r => r.Book)
                 .ThenInclude(b => b.Author)
                 .Include(r => r.Book)
                 .ThenInclude(b => b.Category)
-                .OrderByDescending(r => r.CreatedDate)
                 .ToListAsync();
 
-            return View(reviews);
+            // Build view models
+            var viewModels = new List<MyRatingsViewModel>();
+            var groupedByBook = reviews.GroupBy(r => r.BookId);
+
+            foreach (var bookReviews in groupedByBook)
+            {
+                var myReview = bookReviews.FirstOrDefault();
+                var allReviews = await _context.Reviews
+                    .Where(r => r.BookId == bookReviews.Key)
+                    .ToListAsync();
+
+                var viewModel = new MyRatingsViewModel
+                {
+                    Book = myReview.Book,
+                    MyRating = myReview.Rating,
+                    MyComment = myReview.Comment,
+                    MyRatingDate = myReview.CreatedDate,
+                    AverageRating = allReviews.Any() ? allReviews.Average(r => r.Rating) : 0,
+                    TotalReviews = allReviews.Count
+                };
+                viewModels.Add(viewModel);
+            }
+
+            // Sort results
+            viewModels = sortBy switch
+            {
+                "oldest" => viewModels.OrderBy(v => v.MyRatingDate).ToList(),
+                "highest" => viewModels.OrderByDescending(v => v.MyRating).ToList(),
+                "lowest" => viewModels.OrderBy(v => v.MyRating).ToList(),
+                _ => viewModels.OrderByDescending(v => v.MyRatingDate).ToList()
+            };
+
+            ViewData["SortBy"] = sortBy;
+            ViewData["RatingCount"] = viewModels.Count;
+
+            return View(viewModels);
         }
 
         // GET: Books/CreateCollection

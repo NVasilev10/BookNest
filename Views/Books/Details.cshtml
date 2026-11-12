@@ -154,10 +154,12 @@
                         ✏️ Edit Book
                     </a>
 
-                    <a asp-action="MyCollections"
-                       class="btn btn-outline-primary">
+                    <button type="button" 
+                            class="btn btn-outline-primary" 
+                            data-bs-toggle="modal" 
+                            data-bs-target="#addToCollectionModal">
                         📚 Add to Collection
-                    </a>
+                    </button>
 
                     <a asp-action="AuthorProfile"
                        asp-route-id="@Model.Author?.Id"
@@ -310,6 +312,61 @@
                     No reviews yet. Be the first to review this book!
                 </p>
             }
+        </div>
+    </div>
+</div>
+
+<!-- Add to Collection Modal -->
+<div class="modal fade" id="addToCollectionModal" tabindex="-1" aria-labelledby="addToCollectionModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="addToCollectionModalLabel">
+                    📚 Add to Collection
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                @{
+                    var collections = (List<BookCollection>)ViewData["Collections"] ?? new List<BookCollection>();
+                }
+
+                @if (collections.Any())
+                {
+                    <p class="text-muted mb-3">Select a collection to add "@Model.Title" to:</p>
+                    <div class="list-group">
+                        @foreach (var collection in collections.OrderBy(c => c.Name))
+                        {
+                            <form method="post" asp-action="AddToCollection" asp-route-bookId="@Model.Id" asp-route-collectionId="@collection.Id" style="display:inline;">
+                                <button type="submit" class="list-group-item list-group-item-action" style="text-align: left; border: none; background: white; padding: 1rem;">
+                                    <div>
+                                        <h6 class="mb-1">@collection.Name</h6>
+                                        <small class="text-muted">
+                                            📖 @collection.Books.Count book(s)
+                                            @if (!string.IsNullOrEmpty(collection.Description))
+                                            {
+                                                <div>@collection.Description</div>
+                                            }
+                                        </small>
+                                    </div>
+                                </button>
+                            </form>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <p class="text-muted">
+                        No collections yet. 
+                        <a asp-action="CreateCollection">Create your first collection</a> to organize your books.
+                    </p>
+                }
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    Close
+                </button>
+            </div>
         </div>
     </div>
 </div>
