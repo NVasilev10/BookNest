@@ -1,3 +1,5 @@
+@model BookNest.ViewModels.AdminDashboardViewModel
+
 @{
 	ViewData["Title"] = "Admin Dashboard";
 }
@@ -16,6 +18,10 @@
 			@ViewBag.Message
 			<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
 		</div>
+	}
+	@if (ViewBag.Error != null)
+	{
+		<div class="alert alert-danger" role="alert">@ViewBag.Error</div>
 	}
 
 	<div class="row">
@@ -69,7 +75,38 @@
 				<a href="@Url.Action("Index", "Authors", new { area = "" })" class="btn btn-outline-primary">Manage Authors</a>
 				<a href="@Url.Action("Index", "Categories", new { area = "" })" class="btn btn-outline-primary">Manage Categories</a>
 				<a href="@Url.Action("Index", "Users", new { area = "Admin" })" class="btn btn-outline-primary">Manage Users</a>
+				<a href="@Url.Action("Index", "Reviews", new { area = "Admin" })" class="btn btn-outline-primary">Manage Reviews</a>
 			</div>
+		</div>
+	</div>
+
+	<div class="card mt-3">
+		<div class="card-header"><h3 class="h5 mb-0">Потребители и администраторски права</h3></div>
+		<div class="table-responsive">
+			<table class="table table-striped mb-0">
+				<thead>
+					<tr><th>Потребител</th><th>Имейл</th><th>Роля</th><th>Действие</th></tr>
+				</thead>
+				<tbody>
+					@foreach (var user in Model.Users)
+					{
+						<tr>
+							<td>@user.UserName</td>
+							<td>@user.Email</td>
+							<td>@(user.IsAdministrator ? "User + Administrator" : "User")</td>
+							<td>
+								<form asp-area="Admin" asp-controller="Dashboard" asp-action="SetAdministratorRole" method="post">
+									<input type="hidden" name="userId" value="@user.Id" />
+									<input type="hidden" name="grantAdmin" value="@(!user.IsAdministrator)" />
+									<button type="submit" class="btn btn-sm @(user.IsAdministrator ? "btn-outline-danger" : "btn-outline-success")" @(user.IsAdministrator && user.Id == User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value ? "disabled" : null)>
+										@(user.IsAdministrator ? "Премахни админ права" : "Дай админ права")
+									</button>
+								</form>
+							</td>
+						</tr>
+					}
+				</tbody>
+			</table>
 		</div>
 	</div>
 </div>

@@ -13,9 +13,12 @@
         </p>
     </div>
 
-    <a asp-action="Create" class="btn btn-primary">
-        ➕ Add New Author
-    </a>
+    @if (User.IsInRole("Administrator"))
+    {
+        <a asp-action="Create" class="btn btn-primary">
+            ➕ Add New Author
+        </a>
+    }
 
 </div>
 
@@ -52,9 +55,12 @@
             Start by adding your first author.
         </p>
 
-        <a asp-action="Create" class="btn btn-primary">
-            ➕ Add Your First Author
-        </a>
+        @if (User.IsInRole("Administrator"))
+        {
+            <a asp-action="Create" class="btn btn-primary">
+                ➕ Add Your First Author
+            </a>
+        }
 
     </div>
 }
@@ -107,17 +113,20 @@ else
                                 Details
                             </a>
 
-                            <a asp-action="Edit"
-                               asp-route-id="@item.Id"
-                               class="btn btn-outline-warning btn-sm">
-                                Edit
-                            </a>
+                            @if (User.IsInRole("Administrator"))
+                            {
+                                <a asp-action="Edit"
+                                   asp-route-id="@item.Id"
+                                   class="btn btn-outline-warning btn-sm">
+                                    Edit
+                                </a>
 
-                            <a asp-action="Delete"
-                               asp-route-id="@item.Id"
-                               class="btn btn-outline-danger btn-sm">
-                                Delete
-                            </a>
+                                <a asp-action="Delete"
+                                   asp-route-id="@item.Id"
+                                   class="btn btn-outline-danger btn-sm">
+                                    Delete
+                                </a>
+                            }
 
                         </div>
 

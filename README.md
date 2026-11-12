@@ -12,9 +12,9 @@ BookNest implements advanced ASP.NET Core concepts and follows best practices fo
 ## Features
 
 ### Core Features
-- **Book Management:** Add, edit, view, delete, and search books
-- **Author Management:** Manage book authors with detailed profiles
-- **Category Management:** Organize books into categories
+- **Book Management:** Browse and search books; administrators can add, edit and delete books
+- **Author Management:** Browse author profiles; administrators can manage authors
+- **Category Management:** Browse categories; administrators can manage categories
 - **Book Search & Filtering:**
   - Search by title, description, or author name
   - Filter by author and category
@@ -26,15 +26,17 @@ BookNest implements advanced ASP.NET Core concepts and follows best practices fo
 - **Pagination:** Efficient data display with pagination
 
 ### User Features
-- **User Registration & Authentication:** Secure registration and login
-- **User Roles:** User and Administrator roles
-- **Reading Progress:** Track reading progress for each book
-- **Personal Statistics:** View reading statistics and book ratings
+- **Registration and login:** Register an account and sign in using a username and password. New registrations are assigned the `User` role.
+- **Remember me:** Check the option at login to keep the session across application restarts. Without it, the session is invalidated when the application restarts.
+- **Personal library:** Signed-in users can manage favorites, collections and ratings.
+- **Reading progress:** Each book stores its reading status, page counts and dates. These fields are shared book data, not separate progress per user.
 
 ### Admin Features
-- **Admin Dashboard:** Overview of system statistics
-- **User Management:** Manage users, assign roles, and delete accounts
-- **Role Management:** Assign and revoke roles
+- **Admin Dashboard:** Administrators see a link in the navigation bar and can open `/Admin` for statistics and quick actions.
+- **Catalog:** Add, edit and delete books, authors and categories from their respective pages. These actions require `Administrator`.
+- **Users:** Create accounts, edit names and email, reset passwords, delete accounts and manage `User` and `Administrator` roles under **Manage Users**.
+- **Roles:** The dashboard also lists users and provides buttons to grant or remove administrator access. The current administrator cannot remove their own administrator role or delete their own account.
+- **Reviews:** **Manage Reviews** lists reviews and supports deleting them and changing their approval status. Currently, changing approval status does **not** hide reviews from public book pages or exclude them from ratings; use deletion if a review must be removed.
 
 ## Architecture
 
@@ -43,7 +45,7 @@ BookNest implements advanced ASP.NET Core concepts and follows best practices fo
 BookNest/
 ├── Controllers/           # MVC Controllers (Home, Books, Authors, Categories, Account, Error)
 ├── Areas/Admin/           # Admin area with administration features
-│   ├── Controllers/       # Admin controllers (Dashboard, Users)
+│   ├── Controllers/       # Admin controllers (Dashboard, Users, Reviews)
 │   └── Views/            # Admin views
 ├── Models/               # Entity models (Book, Author, Category, Review, etc.)
 ├── Views/                # Razor views (HTML/CSS UI)
@@ -78,14 +80,14 @@ BookNest/
 - **UI Framework:** Bootstrap 5
 - **Authentication:** ASP.NET Core Identity
 - **Testing:** xUnit + Moq
-- **Validation:** Data annotations and fluentvalidation
+- **Validation:** Data annotations and ASP.NET Core model validation
 
 ## Setup Instructions
 
 ### Prerequisites
 - .NET 10 SDK
-- Visual Studio 2022 / JetBrains Rider
-- SQL Server
+- Visual Studio with .NET 10 support or another compatible IDE
+- SQL Server or SQL Server LocalDB
 
 ### Installation Steps
 
@@ -103,10 +105,9 @@ BookNest/
    }
    ```
 
-3. **Apply Migrations**
-   ```bash
-   dotnet ef database update
-   ```
+3. **Database setup**
+   - The application applies its EF Core migrations when it starts. Make sure SQL Server is running and the configured account can create and update the database.
+   - If startup reports an error seeding the database, check the connection and permissions. You can also apply migrations manually with `dotnet ef database update` when the `dotnet-ef` tool is installed.
 
 4. **Run the Application**
    ```bash
@@ -114,33 +115,54 @@ BookNest/
    ```
 
 5. **Access the Application**
-   - Open browser: `https://localhost:7281`
+   - Open `https://localhost:7281` (or `http://localhost:5112`, which redirects to HTTPS). For local development, trust the .NET development HTTPS certificate if prompted.
 
-### Default Admin Account
-- **Username:** admin
-- **Password:** Admin@123
+### Create the first administrator
 
-## API Endpoints
+There is **no default administrator account or password**. Start the application once so that the database and roles are created, then register an account through `/Account/Register`. To give that account the `Administrator` role initially, connect to the configured SQL Server instance in Visual Studio's **SQL Server Object Explorer**, open a **New Query** for `BookNestDb`, and run the following SQL. Replace `your_username` with the registered username.
+
+```sql
+USE [BookNestDb];
+GO
+DECLARE @UserName nvarchar(256) = N'your_username';
+DECLARE @UserId nvarchar(450);
+DECLARE @RoleId nvarchar(450);
+
+SELECT @UserId = Id FROM dbo.AspNetUsers WHERE NormalizedUserName = UPPER(@UserName);
+SELECT @RoleId = Id FROM dbo.AspNetRoles WHERE NormalizedName = N'ADMINISTRATOR';
+
+IF @UserId IS NULL
+    THROW 50001, 'User not found.', 1;
+IF @RoleId IS NULL
+    THROW 50002, 'Administrator role not found. Start the application first.', 1;
+
+IF NOT EXISTS (SELECT 1 FROM dbo.AspNetUserRoles WHERE UserId = @UserId AND RoleId = @RoleId)
+    INSERT INTO dbo.AspNetUserRoles (UserId, RoleId) VALUES (@UserId, @RoleId);
+```
+
+Sign out and sign back in to refresh the role in the authentication cookie. The account keeps its existing `User` role. After that, administrators can manage users and roles in the browser without SQL. If the query reports `Invalid object name`, make sure it runs against the correct database and that migrations completed.
+
+## MVC Routes
 
 ### Public Endpoints
 - `GET /` - Home page
 - `GET /Books` - Book list with search/filter
-- `GET /Books/{id}` - Book details
+- `GET /Books/Details/{id}` - Book details
 - `GET /Authors` - Author list
 - `GET /Categories` - Category list
 - `GET /Account/Register` - User registration
 - `GET /Account/Login` - User login
 
-### Authenticated Endpoints
-- `POST /Books/Create` - Add new book
-- `POST /Books/Edit/{id}` - Edit book
-- `POST /Books/Delete/{id}` - Delete book
-- `POST /Books/AddToFavorites/{id}` - Mark as favorite
+### Authenticated Routes
+- `POST /Books/ToggleFavorite/{id}` - Add or remove a favorite
+- `GET /Books/MyCollections` and `GET /Books/MyRatings` - Personal collections and ratings
+- `POST /Books/CreateReview` - Add a review
 
-### Admin Endpoints
-- `GET /Admin/Dashboard` - Admin dashboard
-- `GET /Admin/Users` - User management
-- `POST /Admin/Users/UpdateRole` - Update user role
+### Administrator Routes
+- `GET /Admin` or `GET /Admin/Dashboard` - Dashboard and administrator role actions
+- `GET /Admin/Users` - Create, edit, delete and manage users and roles
+- `GET /Admin/Reviews` - Manage review approval status and delete reviews
+- `POST /Books/Create`, `/Books/Edit/{id}`, `/Books/Delete/{id}` - Modify books; equivalent administrator actions exist for authors and categories
 
 ## Data Validation
 
@@ -156,12 +178,10 @@ BookNest/
 
 ## Security Features
 
-- **CSRF Protection:** AntiForgeryToken on all forms
-- **XSS Protection:** HTML encoding in views
-- **SQL Injection Prevention:** Parameterized queries via EF Core
-- **Password Security:** Strong password requirements via Identity
-- **Authorization:** Role-based access control
-- **Authentication:** ASP.NET Identity system
+- **CSRF protection:** State-changing administrative forms use antiforgery validation.
+- **Authentication and authorization:** ASP.NET Core Identity and role-based access control.
+- **Password policy:** The configured minimum is six characters; digits, mixed case and special characters are not required. Strengthen this policy before production use.
+- **Sessions:** Persistent cookies are issued only when Remember me is selected. Temporary sessions are tied to the running application instance.
 
 ## Error Handling
 
@@ -175,18 +195,7 @@ BookNest/
 ## Testing
 
 ### Unit Tests
-The application includes comprehensive unit tests covering:
-- Book repository operations (Create, Read, Update, Delete, Search)
-- Author repository operations
-- Category repository operations
-- Review and rating functionality
-- Search and filter functionality
-
-### Test Coverage
-- **Target Coverage:** 65%+ of business logic
-- **Testing Framework:** xUnit
-- **Mocking Framework:** Moq
-- **Test Database:** In-memory SQL Server for testing
+The `Tests` directory contains xUnit tests for selected book, author, category and review operations using the EF Core in-memory provider. These tests do not cover the full application or administrative workflows.
 
 ### Running Tests
 ```bash
@@ -195,13 +204,7 @@ dotnet test
 
 ## Seeding
 
-The application automatically seeds the database with:
-- 5 Sample Authors
-- 6 Book Categories
-- Sample books for testing (when needed)
-- Required Identity roles (User, Administrator)
-
-Seeding occurs on application startup if the database is empty.
+On startup, the application applies migrations and creates the `User` and `Administrator` roles if needed. If their tables are empty, it also adds five sample authors and six categories. It does not create an administrator account or sample books.
 
 ## Performance Considerations
 
@@ -212,10 +215,9 @@ Seeding occurs on application startup if the database is empty.
 
 ## Future Enhancements
 
-- Reading progress bar for books
 - Recommendation system based on ratings
-- Book review moderation
-- Export/import collection (CSV, JSON)
+- Enforce review approval status on public pages and rating calculations
+- Import collections (CSV, JSON)
 - REST API for mobile clients
 - SignalR real-time notifications
 - Cloud deployment (Azure)
@@ -259,7 +261,6 @@ For questions or issues, please open an issue on GitHub or contact the repositor
 
 ---
 
-**Last Updated:** December 2026
 **Version:** 1.0.0
 - View all user ratings (My Ratings)
 - Leave comments on book reviews
@@ -468,7 +469,7 @@ The application provides navigation between the main sections:
 - Authors
 - Categories
 
-The CRUD operations for the main entities can be accessed through the corresponding pages.
+Administrators can access catalog CRUD operations through the corresponding pages and the Admin Dashboard. Other users can browse the catalog and use personal features after signing in.
 
 ## Books
 
@@ -487,16 +488,14 @@ Users can:
 - View My Ratings - all books user has rated
 - Create and manage book collections
 - Add/remove books from collections
-- Add a book
-- Edit a book
 - View book details with reviews and average rating
-- Delete a book
+- Administrators can add, edit and delete books
 - Mark a book as favorite
 - View author profiles
 
 ## Authors
 
-The Authors section allows users to manage authors.
+The Authors section allows users to browse authors; administrators can manage them.
 
 Available operations include:
 
@@ -508,7 +507,7 @@ Available operations include:
 
 ## Categories
 
-The Categories section allows users to manage book categories.
+The Categories section allows users to browse categories; administrators can manage them.
 
 Available operations include:
 

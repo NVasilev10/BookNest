@@ -2,7 +2,9 @@ using BookNest.Data;
 using BookNest.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Authentication;
 
+var appInstanceId = Guid.NewGuid().ToString("N");
 var builder = WebApplication.CreateBuilder(args);
 
 // Configure the URLs
@@ -24,6 +26,30 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 .AddEntityFrameworkStores<ApplicationDbContext>()
 .AddDefaultUI()
 .AddDefaultTokenProviders();
+
+builder.Services.ConfigureApplicationCookie(options =>
+{
+    options.Events.OnSigningIn = context =>
+    {
+        if (!context.Properties.IsPersistent)
+        {
+            context.Properties.Items["BookNestAppInstance"] = appInstanceId;
+        }
+        return Task.CompletedTask;
+    };
+    options.Events.OnValidatePrincipal = async context =>
+    {
+        if (!context.Properties.IsPersistent &&
+            (!context.Properties.Items.TryGetValue("BookNestAppInstance", out var instanceId) || instanceId != appInstanceId))
+        {
+            context.RejectPrincipal();
+            await context.HttpContext.SignOutAsync(IdentityConstants.ApplicationScheme);
+            return;
+        }
+
+        await SecurityStampValidator.ValidatePrincipalAsync(context);
+    };
+});
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();

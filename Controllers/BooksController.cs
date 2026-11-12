@@ -180,6 +180,7 @@ namespace BookNest.Controllers
         }
 
         // GET: Books/Create
+        [Authorize(Roles = "Administrator")]
         public async Task<IActionResult> Create()
         {
             await PopulateDropdowns();
@@ -207,6 +208,7 @@ namespace BookNest.Controllers
         // POST: Books/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Administrator")]
         public async Task<IActionResult> Create(Book book)
         {
             // Remove IsFavorite and Author/Category navigation properties from ModelState
@@ -258,6 +260,7 @@ namespace BookNest.Controllers
         }
 
         // GET: Books/Edit/5
+        [Authorize(Roles = "Administrator")]
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
@@ -292,6 +295,7 @@ namespace BookNest.Controllers
         // POST: Books/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Administrator")]
         public async Task<IActionResult> Edit(
             int id,
             [Bind("Id,Title,Description,PublishedYear,ImageUrl,AuthorId,CategoryId,Status,TotalPages,PagesRead,StartDate,FinishDate")]
@@ -330,6 +334,7 @@ namespace BookNest.Controllers
         }
 
         // GET: Books/Delete/5
+        [Authorize(Roles = "Administrator")]
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
@@ -353,6 +358,7 @@ namespace BookNest.Controllers
         // POST: Books/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Administrator")]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var book = await _context.Books.FindAsync(id);

@@ -1,5 +1,6 @@
 using BookNest.Data;
 using BookNest.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -49,6 +50,7 @@ namespace BookNest.Controllers
         }
 
         // GET: Authors/Create
+        [Authorize(Roles = "Administrator")]
         public IActionResult Create()
         {
             return View();
@@ -57,6 +59,7 @@ namespace BookNest.Controllers
         // POST: Authors/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Administrator")]
         public async Task<IActionResult> Create(
             [Bind("Id,Name,Biography")] Author author)
         {
@@ -72,6 +75,7 @@ namespace BookNest.Controllers
         }
 
         // GET: Authors/Edit/5
+        [Authorize(Roles = "Administrator")]
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
@@ -92,6 +96,7 @@ namespace BookNest.Controllers
         // POST: Authors/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Administrator")]
         public async Task<IActionResult> Edit(
             int id,
             [Bind("Id,Name,Biography")] Author author)
@@ -125,6 +130,7 @@ namespace BookNest.Controllers
         }
 
         // GET: Authors/Delete/5
+        [Authorize(Roles = "Administrator")]
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
@@ -146,6 +152,7 @@ namespace BookNest.Controllers
         // POST: Authors/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Administrator")]
         public async Task<IActionResult> DeleteConfirmed(int? id)
         {
             var author = await _context.Authors.FindAsync(id);

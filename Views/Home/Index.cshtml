@@ -20,11 +20,14 @@
             📚 Browse Books
         </a>
 
-        <a asp-controller="Books"
-           asp-action="Create"
-           class="btn btn-success btn-lg">
-            ➕ Add New Book
-        </a>
+        @if (User.IsInRole("Administrator"))
+        {
+            <a asp-controller="Books"
+               asp-action="Create"
+               class="btn btn-success btn-lg">
+                ➕ Add New Book
+            </a>
+        }
 
     </div>
 

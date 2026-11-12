@@ -3,12 +3,16 @@
 @{
 	ViewData["Title"] = "Manage User Roles";
 	var user = ViewBag.User as ApplicationUser;
-	var allRoles = ViewBag.AllRoles as IEnumerable<IdentityRole>;
-	var userRoles = ViewBag.UserRoles as IList<string>;
+	var allRoles = ViewBag.AllRoles as IEnumerable<IdentityRole> ?? Enumerable.Empty<IdentityRole>();
+	var userRoles = ViewBag.UserRoles as IList<string> ?? Array.Empty<string>();
 }
 
 <div class="container">
-	<h1>Manage Roles for @user.UserName</h1>
+	@if (ViewBag.Error != null)
+	{
+		<div class="alert alert-danger">@ViewBag.Error</div>
+	}
+	<h1>Manage Roles for @user?.UserName</h1>
 
 	<table class="table table-striped">
 		<thead>
@@ -36,7 +40,7 @@
 					</td>
 					<td>
 						<form asp-action="UpdateRole" method="post" style="display:inline;">
-							<input type="hidden" name="userId" value="@user.Id" />
+							<input type="hidden" name="userId" value="@user?.Id" />
 							<input type="hidden" name="roleName" value="@role.Name" />
 							@if (isAssigned)
 							{

@@ -1,0 +1,65 @@
+@model IEnumerable<Review>
+
+@{
+	ViewData["Title"] = "Управление на отзиви";
+}
+
+<div class="container-fluid">
+	<div class="d-flex justify-content-between align-items-center mb-3">
+		<h1>@ViewData["Title"]</h1>
+		<a asp-area="Admin" asp-controller="Dashboard" asp-action="Index" class="btn btn-outline-secondary">Към таблото</a>
+	</div>
+
+	@if (ViewBag.Message != null)
+	{
+		<div class="alert alert-success">@ViewBag.Message</div>
+	}
+
+	<div class="table-responsive">
+		<table class="table table-striped align-middle">
+			<thead>
+				<tr>
+					<th>Книга</th>
+					<th>Потребител</th>
+					<th>Оценка</th>
+					<th>Отзив</th>
+					<th>Дата</th>
+					<th>Статус</th>
+					<th>Действия</th>
+				</tr>
+			</thead>
+			<tbody>
+				@foreach (var review in Model)
+				{
+					<tr>
+						<td>@review.Book?.Title</td>
+						<td>@(review.User?.UserName ?? "Изтрит потребител")</td>
+						<td>@review.Rating / 5</td>
+						<td>@review.Comment</td>
+						<td>@review.CreatedDate.ToString("dd.MM.yyyy HH:mm")</td>
+						<td>
+							<span class="badge @(review.IsApproved ? "bg-success" : "bg-secondary")">
+								@(review.IsApproved ? "Публикуван" : "Скрит")
+							</span>
+						</td>
+						<td>
+							<div class="d-flex gap-2">
+								<form asp-action="SetApproval" method="post">
+									<input type="hidden" name="id" value="@review.Id" />
+									<input type="hidden" name="isApproved" value="@(!review.IsApproved)" />
+									<button type="submit" class="btn btn-sm @(review.IsApproved ? "btn-outline-secondary" : "btn-outline-success")">
+										@(review.IsApproved ? "Скрий" : "Одобри")
+									</button>
+								</form>
+								<form asp-action="Delete" method="post" onsubmit="return confirm('Да изтрия ли този отзив?');">
+									<input type="hidden" name="id" value="@review.Id" />
+									<button type="submit" class="btn btn-sm btn-outline-danger">Изтрий</button>
+								</form>
+							</div>
+						</td>
+					</tr>
+				}
+			</tbody>
+		</table>
+	</div>
+</div>
