@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
 using Microsoft.EntityFrameworkCore;
 using BookNest.Data;
 using BookNest.Models;
@@ -29,6 +31,8 @@ namespace BookNest.Controllers
             if (pageNumber < 1)
                 pageNumber = 1;
 
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var favoriteBookIds = _context.BookFavorites.Where(f => f.UserId == userId).Select(f => f.BookId);
             var books = _context.Books
                 .Include(b => b.Author)
                 .Include(b => b.Category)
@@ -61,7 +65,7 @@ namespace BookNest.Controllers
             // ⭐ Favorites only
             if (favoritesOnly)
             {
-                books = books.Where(b => b.IsFavorite);
+                books = books.Where(b => favoriteBookIds.Contains(b.Id));
             }
 
             // 📊 Apply sorting
@@ -80,7 +84,8 @@ namespace BookNest.Controllers
             var totalCount = await sortedBooks.CountAsync();
 
             // Get total favorites count
-            var favoritesCount = await _context.Books.CountAsync(b => b.IsFavorite);
+            var favoritesCount = await favoriteBookIds.CountAsync();
+            ViewData["FavoriteBookIds"] = (await favoriteBookIds.ToListAsync()).ToHashSet();
 
             // Apply pagination
             var paginatedBooks = await sortedBooks
@@ -122,12 +127,14 @@ namespace BookNest.Controllers
         }
 
         // GET: Books/Favorites
+        [Authorize]
         public async Task<IActionResult> Favorites()
         {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             var favoriteBooks = await _context.Books
                 .Include(b => b.Author)
                 .Include(b => b.Category)
-                .Where(b => b.IsFavorite)
+                .Where(b => _context.BookFavorites.Any(f => f.UserId == userId && f.BookId == b.Id))
                 .OrderBy(b => b.Title)
                 .ToListAsync();
 
@@ -161,9 +168,13 @@ namespace BookNest.Controllers
             ViewData["AverageRating"] = averageRating;
             ViewData["ReviewCount"] = book.Reviews.Count;
 
-            // Get all collections for AddToCollection modal
-            var collections = await _context.BookCollections.ToListAsync();
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var collections = await _context.BookCollections
+                .Include(c => c.Books)
+                .Where(c => userId != null && c.UserId == userId)
+                .ToListAsync();
             ViewData["Collections"] = collections;
+            ViewData["IsFavorite"] = userId != null && await _context.BookFavorites.AnyAsync(f => f.UserId == userId && f.BookId == book.Id);
 
             return View(book);
         }
@@ -225,22 +236,25 @@ namespace BookNest.Controllers
         }
 
         // ⭐ Toggle Favorite
+        [Authorize]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ToggleFavorite(int id)
         {
-            var book = await _context.Books.FindAsync(id);
-
-            if (book == null)
-            {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (userId == null)
+                return Challenge();
+            if (!await _context.Books.AnyAsync(b => b.Id == id))
                 return NotFound();
-            }
 
-            book.IsFavorite = !book.IsFavorite;
+            var favorite = await _context.BookFavorites.FindAsync(userId, id);
+            if (favorite == null)
+                _context.BookFavorites.Add(new BookFavorite { UserId = userId, BookId = id });
+            else
+                _context.BookFavorites.Remove(favorite);
 
             await _context.SaveChangesAsync();
-
-            return RedirectToAction(nameof(Index));
+            return RedirectToAction(nameof(Details), new { id });
         }
 
         // GET: Books/Edit/5
@@ -280,7 +294,7 @@ namespace BookNest.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(
             int id,
-            [Bind("Id,Title,Description,PublishedYear,ImageUrl,AuthorId,CategoryId,IsFavorite")]
+            [Bind("Id,Title,Description,PublishedYear,ImageUrl,AuthorId,CategoryId,Status,TotalPages,PagesRead,StartDate,FinishDate")]
             Book book)
         {
             if (id != book.Id)
@@ -296,7 +310,11 @@ namespace BookNest.Controllers
             {
                 try
                 {
-                    _context.Update(book);
+                    var existingBook = await _context.Books.FindAsync(id);
+                    if (existingBook == null)
+                        return NotFound();
+                    _context.Entry(existingBook).CurrentValues.SetValues(book);
+                    _context.Entry(existingBook).Property(b => b.IsFavorite).IsModified = false;
                     await _context.SaveChangesAsync();
                     return RedirectToAction(nameof(Index));
                 }
@@ -349,25 +367,28 @@ namespace BookNest.Controllers
         }
 
         // POST: Books/CreateReview
+        [Authorize]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> CreateReview(int bookId, [Bind("Rating,Comment")] Review review)
         {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (userId == null)
+                return Challenge();
+            if (!await _context.Books.AnyAsync(b => b.Id == bookId))
+                return NotFound();
             review.BookId = bookId;
+            review.UserId = userId;
+            ModelState.Remove(nameof(Review.Book));
 
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
-                try
-                {
-                    _context.Add(review);
-                    await _context.SaveChangesAsync();
-                }
-                catch (Exception ex)
-                {
-                    ModelState.AddModelError("", $"Error saving review: {ex.Message}");
-                }
+                TempData["ReviewError"] = "Please select a rating from 1 to 5 and use a comment of at most 500 characters.";
+                return RedirectToAction(nameof(Details), new { id = bookId });
             }
 
+            _context.Add(review);
+            await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Details), new { id = bookId });
         }
 
@@ -375,10 +396,11 @@ namespace BookNest.Controllers
         public async Task<IActionResult> Statistics()
         {
             // Total counts
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             var totalBooks = await _context.Books.CountAsync();
             var totalAuthors = await _context.Authors.CountAsync();
             var totalCategories = await _context.Categories.CountAsync();
-            var totalFavorites = await _context.Books.CountAsync(b => b.IsFavorite);
+            var totalFavorites = await _context.BookFavorites.CountAsync(f => f.UserId == userId);
             var totalReviews = await _context.Reviews.CountAsync();
 
             // Popular authors (by book count)
@@ -430,6 +452,8 @@ namespace BookNest.Controllers
             bool favoritesOnly = false,
             string sortBy = "title")
         {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var favoriteBookIds = _context.BookFavorites.Where(f => f.UserId == userId).Select(f => f.BookId);
             var books = _context.Books
                 .Include(b => b.Author)
                 .Include(b => b.Category)
@@ -459,10 +483,11 @@ namespace BookNest.Controllers
 
             if (favoritesOnly)
             {
-                books = books.Where(b => b.IsFavorite);
+                books = books.Where(b => favoriteBookIds.Contains(b.Id));
             }
 
             var booksToExport = await books.ToListAsync();
+            var favorites = (await favoriteBookIds.ToListAsync()).ToHashSet();
 
             // Generate CSV
             var csv = new System.Text.StringBuilder();
@@ -471,7 +496,7 @@ namespace BookNest.Controllers
             foreach (var book in booksToExport)
             {
                 var avgRating = book.Reviews.Any() ? book.Reviews.Average(r => r.Rating) : 0;
-                var line = $"\"{book.Title}\",\"{book.Author?.Name ?? "N/A"}\",\"{book.Category?.Name ?? "N/A"}\",{book.PublishedYear},{book.IsFavorite},{avgRating}";
+                var line = $"\"{book.Title}\",\"{book.Author?.Name ?? "N/A"}\",\"{book.Category?.Name ?? "N/A"}\",{book.PublishedYear},{favorites.Contains(book.Id)},{avgRating}";
                 csv.AppendLine(line);
             }
 
@@ -487,6 +512,8 @@ namespace BookNest.Controllers
             bool favoritesOnly = false,
             string sortBy = "title")
         {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var favoriteBookIds = _context.BookFavorites.Where(f => f.UserId == userId).Select(f => f.BookId);
             var books = _context.Books
                 .Include(b => b.Author)
                 .Include(b => b.Category)
@@ -516,10 +543,11 @@ namespace BookNest.Controllers
 
             if (favoritesOnly)
             {
-                books = books.Where(b => b.IsFavorite);
+                books = books.Where(b => favoriteBookIds.Contains(b.Id));
             }
 
             var booksToExport = await books.ToListAsync();
+            var favorites = (await favoriteBookIds.ToListAsync()).ToHashSet();
 
             // Transform to export-friendly format
             var exportData = booksToExport.Select(b => new
@@ -529,7 +557,7 @@ namespace BookNest.Controllers
                 Author = b.Author?.Name ?? "N/A",
                 Category = b.Category?.Name ?? "N/A",
                 b.PublishedYear,
-                b.IsFavorite,
+                IsFavorite = favorites.Contains(b.Id),
                 AverageRating = b.Reviews.Any() ? Math.Round(b.Reviews.Average(r => r.Rating), 2) : 0,
                 ReviewCount = b.Reviews.Count
             }).ToList();

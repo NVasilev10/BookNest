@@ -3,6 +3,7 @@
 @{
 	ViewData["Title"] = "Books";
 	bool favoritesOnly = ViewData["FavoritesOnly"] as bool? ?? false;
+	var favoriteBookIds = (HashSet<int>)ViewData["FavoriteBookIds"]!;
 }
 
 <div class="d-flex justify-content-between align-items-center mb-4">
@@ -194,7 +195,7 @@ else
 						<!-- Badges Row -->
 						<div class="mb-3 d-flex flex-wrap gap-2">
 							<!-- ⭐ Favorite Badge -->
-							@if (item.IsFavorite)
+							@if (favoriteBookIds.Contains(item.Id))
 							{
 								<span class="badge bg-warning text-dark">⭐ Favorite</span>
 							}

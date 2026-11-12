@@ -148,6 +148,12 @@
 
                 <div class="border-top pt-3">
 
+                    <form asp-action="ToggleFavorite" asp-route-id="@Model.Id" method="post" class="d-inline">
+                        <button type="submit" class="btn btn-outline-warning">
+                            @((bool)ViewData["IsFavorite"]! ? "Remove from Favorites" : "Add to Favorites")
+                        </button>
+                    </form>
+
                     <a asp-action="Edit"
                        asp-route-id="@Model.Id"
                        class="btn btn-warning">
@@ -228,6 +234,10 @@
         <!-- Add Review Form -->
         <div class="mb-4">
             <h6>Add Your Review</h6>
+            @if (TempData["ReviewError"] is string reviewError)
+            {
+                <div class="alert alert-danger">@reviewError</div>
+            }
             <form asp-action="CreateReview" asp-route-bookId="@Model.Id" method="post" class="row g-3">
                 @Html.AntiForgeryToken()
 

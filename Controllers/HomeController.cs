@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 using BookNest.Data;
 using BookNest.Models;
 
@@ -16,10 +17,11 @@ namespace BookNest.Controllers
 
         public async Task<IActionResult> Index()
         {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var favoriteBookIds = _context.BookFavorites.Where(f => f.UserId == userId).Select(f => f.BookId);
             ViewBag.BooksCount = await _context.Books.CountAsync();
-
-            ViewBag.FavoritesCount = await _context.Books
-                .CountAsync(b => b.IsFavorite);
+            ViewBag.FavoritesCount = await favoriteBookIds.CountAsync();
+            ViewBag.FavoriteBookIds = (await favoriteBookIds.ToListAsync()).ToHashSet();
 
             ViewBag.AuthorsCount = await _context.Authors.CountAsync();
 
@@ -53,7 +55,7 @@ namespace BookNest.Controllers
             var favoriteBooks = await _context.Books
                 .Include(b => b.Author)
                 .Include(b => b.Category)
-                .Where(b => b.IsFavorite)
+                .Where(b => favoriteBookIds.Contains(b.Id))
                 .Take(6)
                 .ToListAsync();
 

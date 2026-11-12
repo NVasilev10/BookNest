@@ -192,6 +192,21 @@ namespace BookNest.Migrations
                     b.ToTable("Books");
                 });
 
+            modelBuilder.Entity("BookNest.Models.BookFavorite", b =>
+                {
+                    b.Property<string>("UserId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<int>("BookId")
+                        .HasColumnType("int");
+
+                    b.HasKey("UserId", "BookId");
+
+                    b.HasIndex("BookId");
+
+                    b.ToTable("BookFavorites");
+                });
+
             modelBuilder.Entity("BookNest.Models.BookCollection", b =>
                 {
                     b.Property<int>("Id")
@@ -452,6 +467,25 @@ namespace BookNest.Migrations
                     b.Navigation("Author");
 
                     b.Navigation("Category");
+                });
+
+            modelBuilder.Entity("BookNest.Models.BookFavorite", b =>
+                {
+                    b.HasOne("BookNest.Models.Book", "Book")
+                        .WithMany()
+                        .HasForeignKey("BookId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("BookNest.Models.ApplicationUser", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Book");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("BookNest.Models.BookCollection", b =>

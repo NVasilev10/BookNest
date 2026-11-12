@@ -299,7 +299,7 @@
                             <h5 class="card-title">@book.Title</h5>
                             <p class="text-muted small">✍️ @book.Author?.Name</p>
                             <p class="text-muted small">🏷️ @book.Category?.Name</p>
-                            @if (book.IsFavorite)
+                            @if (((HashSet<int>)ViewBag.FavoriteBookIds).Contains(book.Id))
                             {
                                 <span class="badge bg-warning text-dark">⭐ Favorite</span>
                             }

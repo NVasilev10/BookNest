@@ -22,9 +22,14 @@ namespace BookNest.Data
 
         public DbSet<BookCollection> BookCollections { get; set; }
 
+        public DbSet<BookFavorite> BookFavorites { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
+
+            modelBuilder.Entity<BookFavorite>()
+                .HasKey(f => new { f.UserId, f.BookId });
 
             // Configure many-to-many relationship between Book and BookCollection
             modelBuilder.Entity<Book>()
