@@ -8,10 +8,12 @@ namespace BookNest.Tests
 {
     public class BookRepositoryTests
     {
+        private readonly string _databaseName = "BookNestTest_" + Guid.NewGuid();
+
         private ApplicationDbContext GetDbContext()
         {
             var options = new DbContextOptionsBuilder<ApplicationDbContext>()
-                .UseInMemoryDatabase(databaseName: "BookNestTest_" + Guid.NewGuid().ToString())
+                .UseInMemoryDatabase(databaseName: _databaseName)
                 .Options;
 
             return new ApplicationDbContext(options);
@@ -29,6 +31,7 @@ namespace BookNest.Tests
                 { 
                     Id = 1, 
                     Title = "Test Book", 
+                    PublishedYear = 2020,
                     AuthorId = 1, 
                     CategoryId = 1 
                 });
@@ -59,6 +62,7 @@ namespace BookNest.Tests
                 var book = new Book 
                 { 
                     Title = "New Book", 
+                    PublishedYear = 2020,
                     AuthorId = author.Id, 
                     CategoryId = category.Id 
                 };
@@ -83,8 +87,8 @@ namespace BookNest.Tests
                 context.Authors.Add(author);
                 context.Categories.Add(category);
                 context.Books.AddRange(
-                    new Book { Title = "Harry Potter", AuthorId = 1, CategoryId = 1 },
-                    new Book { Title = "The Hobbit", AuthorId = 1, CategoryId = 1 }
+                    new Book { Title = "Harry Potter", PublishedYear = 1997, AuthorId = 1, CategoryId = 1 },
+                    new Book { Title = "The Hobbit", PublishedYear = 1937, AuthorId = 1, CategoryId = 1 }
                 );
                 await context.SaveChangesAsync();
 

@@ -7,10 +7,12 @@ namespace BookNest.Tests
 {
     public class ReviewRepositoryTests
     {
+        private readonly string _databaseName = "BookNestTest_" + Guid.NewGuid();
+
         private ApplicationDbContext GetDbContext()
         {
             var options = new DbContextOptionsBuilder<ApplicationDbContext>()
-                .UseInMemoryDatabase(databaseName: "BookNestTest_" + Guid.NewGuid().ToString())
+                .UseInMemoryDatabase(databaseName: _databaseName)
                 .Options;
 
             return new ApplicationDbContext(options);
@@ -29,6 +31,7 @@ namespace BookNest.Tests
                 var book = new Book 
                 { 
                     Title = "Test Book",
+                    PublishedYear = 2020,
                     AuthorId = author.Id,
                     CategoryId = category.Id
                 };
@@ -64,8 +67,8 @@ namespace BookNest.Tests
                 context.Authors.Add(author);
                 context.Categories.Add(category);
 
-                var book1 = new Book { Title = "Book 1", AuthorId = author.Id, CategoryId = category.Id };
-                var book2 = new Book { Title = "Book 2", AuthorId = author.Id, CategoryId = category.Id };
+                var book1 = new Book { Title = "Book 1", PublishedYear = 2020, AuthorId = author.Id, CategoryId = category.Id };
+                var book2 = new Book { Title = "Book 2", PublishedYear = 2021, AuthorId = author.Id, CategoryId = category.Id };
                 context.Books.AddRange(book1, book2);
                 await context.SaveChangesAsync();
 
@@ -95,7 +98,7 @@ namespace BookNest.Tests
                 context.Authors.Add(author);
                 context.Categories.Add(category);
 
-                var book = new Book { Title = "Book", AuthorId = author.Id, CategoryId = category.Id };
+                var book = new Book { Title = "Book", PublishedYear = 2020, AuthorId = author.Id, CategoryId = category.Id };
                 context.Books.Add(book);
                 await context.SaveChangesAsync();
 

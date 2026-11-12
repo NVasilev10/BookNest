@@ -7,10 +7,12 @@ namespace BookNest.Tests
 {
     public class CategoryRepositoryTests
     {
+        private readonly string _databaseName = "BookNestTest_" + Guid.NewGuid();
+
         private ApplicationDbContext GetDbContext()
         {
             var options = new DbContextOptionsBuilder<ApplicationDbContext>()
-                .UseInMemoryDatabase(databaseName: "BookNestTest_" + Guid.NewGuid().ToString())
+                .UseInMemoryDatabase(databaseName: _databaseName)
                 .Options;
 
             return new ApplicationDbContext(options);
