@@ -1,0 +1,59 @@
+@using Microsoft.AspNetCore.Identity
+
+@{
+	ViewData["Title"] = "Manage User Roles";
+	var user = ViewBag.User as ApplicationUser;
+	var allRoles = ViewBag.AllRoles as IEnumerable<IdentityRole>;
+	var userRoles = ViewBag.UserRoles as IList<string>;
+}
+
+<div class="container">
+	<h1>Manage Roles for @user.UserName</h1>
+
+	<table class="table table-striped">
+		<thead>
+			<tr>
+				<th>Role</th>
+				<th>Assigned</th>
+				<th>Action</th>
+			</tr>
+		</thead>
+		<tbody>
+			@foreach (var role in allRoles)
+			{
+				var isAssigned = userRoles.Contains(role.Name);
+				<tr>
+					<td>@role.Name</td>
+					<td>
+						@if (isAssigned)
+						{
+							<span class="badge bg-success">Assigned</span>
+						}
+						else
+						{
+							<span class="badge bg-secondary">Not Assigned</span>
+						}
+					</td>
+					<td>
+						<form asp-action="UpdateRole" method="post" style="display:inline;">
+							<input type="hidden" name="userId" value="@user.Id" />
+							<input type="hidden" name="roleName" value="@role.Name" />
+							@if (isAssigned)
+							{
+								<input type="hidden" name="addRole" value="false" />
+								<button type="submit" class="btn btn-sm btn-danger">Remove</button>
+							}
+							else
+							{
+								<input type="hidden" name="addRole" value="true" />
+								<button type="submit" class="btn btn-sm btn-success">Add</button>
+							}
+						</form>
+					</td>
+				</tr>
+			}
+		</tbody>
+	</table>
+
+	<a asp-action="Index" class="btn btn-secondary">Back to Users</a>
+</div>

@@ -29,10 +29,13 @@ namespace BookNest.Models
         [Display(Name = "Причина за флаговане")]
         public string? FlagReason { get; set; }
 
-        // Foreign Key
+        // Foreign Keys
         [Required]
         [Display(Name = "Книга")]
         public int BookId { get; set; }
         public Book Book { get; set; } = null!;
+
+        public string? UserId { get; set; }
+        public ApplicationUser? User { get; set; }
     }
 }

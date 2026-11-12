@@ -15,6 +15,10 @@ namespace BookNest.Models
 
         public DateTime CreatedDate { get; set; } = DateTime.Now;
 
+        // Foreign Key
+        public string? UserId { get; set; }
+        public ApplicationUser? User { get; set; }
+
         // Many-to-Many relationship
         public ICollection<Book> Books { get; set; } = new List<Book>();
     }

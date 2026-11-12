@@ -1,9 +1,10 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using BookNest.Models;
 
 namespace BookNest.Data
 {
-    public class ApplicationDbContext : DbContext
+    public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     {
         public ApplicationDbContext(
             DbContextOptions<ApplicationDbContext> options)
@@ -30,6 +31,20 @@ namespace BookNest.Data
                 .HasMany(b => b.Collections)
                 .WithMany(c => c.Books)
                 .UsingEntity(j => j.ToTable("BookBookCollection"));
+
+            // Configure Review to ApplicationUser relationship
+            modelBuilder.Entity<Review>()
+                .HasOne(r => r.User)
+                .WithMany(u => u.Reviews)
+                .HasForeignKey(r => r.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Configure BookCollection to ApplicationUser relationship
+            modelBuilder.Entity<BookCollection>()
+                .HasOne(bc => bc.User)
+                .WithMany(u => u.BookCollections)
+                .HasForeignKey(bc => bc.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }

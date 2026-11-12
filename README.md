@@ -1,23 +1,266 @@
-# BookNest
+# BookNest - Personal Book Collection Management System
 
-BookNest is an ASP.NET Core MVC web application for managing a personal book collection.
+BookNest is a professional ASP.NET Core web application for managing a personal book collection. It allows users to organize, search, rate, and track their reading progress with a comprehensive set of features.
 
-The application allows users to add, edit, view, search and delete books, as well as manage authors and categories. Users can also mark books as favorites and filter the book collection.
+## Project Overview
 
-## Main Features
+BookNest implements advanced ASP.NET Core concepts and follows best practices for web application development. The application is built with .NET 10, uses Entity Framework Core for data access, and incorporates ASP.NET Identity for user management.
 
-- View all books in the collection
-- Search books by title
-- Filter books by author
-- Filter books by category
-- Filter only favorite books
-- Sort books by rating, publish date, and title
-- Add new books
-- Edit existing books
-- View book details
-- Delete books
-- Mark and unmark books as favorites
-- Rate books with a 1-5 star rating system
+**Course:** ASP.NET Advanced - SoftUni October 2026
+**Technology Stack:** ASP.NET Core .NET 10, Entity Framework Core, SQL Server, Bootstrap 5
+
+## Features
+
+### Core Features
+- **Book Management:** Add, edit, view, delete, and search books
+- **Author Management:** Manage book authors with detailed profiles
+- **Category Management:** Organize books into categories
+- **Book Search & Filtering:**
+  - Search by title, description, or author name
+  - Filter by author and category
+  - Sort by rating, publish date, and title
+  - Favorites-only view
+- **Rating System:** 1-5 star rating system with user reviews
+- **Book Collections:** Create custom book collections
+- **Personal Library:** Track favorite books and mark as read
+- **Pagination:** Efficient data display with pagination
+
+### User Features
+- **User Registration & Authentication:** Secure registration and login
+- **User Roles:** User and Administrator roles
+- **Reading Progress:** Track reading progress for each book
+- **Personal Statistics:** View reading statistics and book ratings
+
+### Admin Features
+- **Admin Dashboard:** Overview of system statistics
+- **User Management:** Manage users, assign roles, and delete accounts
+- **Role Management:** Assign and revoke roles
+
+## Architecture
+
+### Project Structure
+```
+BookNest/
+├── Controllers/           # MVC Controllers (Home, Books, Authors, Categories, Account, Error)
+├── Areas/Admin/           # Admin area with administration features
+│   ├── Controllers/       # Admin controllers (Dashboard, Users)
+│   └── Views/            # Admin views
+├── Models/               # Entity models (Book, Author, Category, Review, etc.)
+├── Views/                # Razor views (HTML/CSS UI)
+├── Data/                 # Database context and seeding
+├── Helpers/              # Helper classes (PaginatedList)
+├── ViewModels/           # View models for forms
+├── Migrations/           # EF Core database migrations
+├── Tests/                # Unit tests
+└── wwwroot/              # Static files (CSS, JavaScript)
+```
+
+### Database Models
+- **ApplicationUser** - Custom user model extending IdentityUser
+- **Book** - Main entity for books
+- **Author** - Authors of books
+- **Category** - Book categories
+- **Review** - User reviews and ratings
+- **BookCollection** - Custom user collections
+
+### Relationships
+- One Author to Many Books
+- One Category to Many Books
+- Many Books to Many BookCollections (Many-to-Many)
+- One ApplicationUser to Many Reviews
+- One ApplicationUser to Many BookCollections
+
+## Technologies Used
+
+- **Framework:** ASP.NET Core .NET 10
+- **Database:** SQL Server + Entity Framework Core 10.0.12
+- **ORM:** Entity Framework Core with migrations
+- **UI Framework:** Bootstrap 5
+- **Authentication:** ASP.NET Core Identity
+- **Testing:** xUnit + Moq
+- **Validation:** Data annotations and fluentvalidation
+
+## Setup Instructions
+
+### Prerequisites
+- .NET 10 SDK
+- Visual Studio 2022 / JetBrains Rider
+- SQL Server
+
+### Installation Steps
+
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/NVasilev10/BookNest.git
+   cd BookNest
+   ```
+
+2. **Configure Database Connection**
+   - Update connection string in `appsettings.json`:
+   ```json
+   "ConnectionStrings": {
+     "DefaultConnection": "Server=YOUR_SERVER;Database=BookNestDb;Trusted_Connection=true;"
+   }
+   ```
+
+3. **Apply Migrations**
+   ```bash
+   dotnet ef database update
+   ```
+
+4. **Run the Application**
+   ```bash
+   dotnet run
+   ```
+
+5. **Access the Application**
+   - Open browser: `https://localhost:7281`
+
+### Default Admin Account
+- **Username:** admin
+- **Password:** Admin@123
+
+## API Endpoints
+
+### Public Endpoints
+- `GET /` - Home page
+- `GET /Books` - Book list with search/filter
+- `GET /Books/{id}` - Book details
+- `GET /Authors` - Author list
+- `GET /Categories` - Category list
+- `GET /Account/Register` - User registration
+- `GET /Account/Login` - User login
+
+### Authenticated Endpoints
+- `POST /Books/Create` - Add new book
+- `POST /Books/Edit/{id}` - Edit book
+- `POST /Books/Delete/{id}` - Delete book
+- `POST /Books/AddToFavorites/{id}` - Mark as favorite
+
+### Admin Endpoints
+- `GET /Admin/Dashboard` - Admin dashboard
+- `GET /Admin/Users` - User management
+- `POST /Admin/Users/UpdateRole` - Update user role
+
+## Data Validation
+
+### Client-Side Validation
+- HTML5 form validation
+- JavaScript validation
+- ASP.NET Razor validation messages
+
+### Server-Side Validation
+- Data annotations on models
+- Custom validation logic
+- Entity Framework constraints
+
+## Security Features
+
+- **CSRF Protection:** AntiForgeryToken on all forms
+- **XSS Protection:** HTML encoding in views
+- **SQL Injection Prevention:** Parameterized queries via EF Core
+- **Password Security:** Strong password requirements via Identity
+- **Authorization:** Role-based access control
+- **Authentication:** ASP.NET Identity system
+
+## Error Handling
+
+- **Custom Error Pages:**
+  - 404 Not Found page
+  - 500 Internal Server Error page
+  - General error page
+- **Exception Handling:** Global exception handler in middleware
+- **Logging:** Error logging for debugging
+
+## Testing
+
+### Unit Tests
+The application includes comprehensive unit tests covering:
+- Book repository operations (Create, Read, Update, Delete, Search)
+- Author repository operations
+- Category repository operations
+- Review and rating functionality
+- Search and filter functionality
+
+### Test Coverage
+- **Target Coverage:** 65%+ of business logic
+- **Testing Framework:** xUnit
+- **Mocking Framework:** Moq
+- **Test Database:** In-memory SQL Server for testing
+
+### Running Tests
+```bash
+dotnet test
+```
+
+## Seeding
+
+The application automatically seeds the database with:
+- 5 Sample Authors
+- 6 Book Categories
+- Sample books for testing (when needed)
+- Required Identity roles (User, Administrator)
+
+Seeding occurs on application startup if the database is empty.
+
+## Performance Considerations
+
+- **Pagination:** Limits data retrieval per page
+- **Lazy Loading Prevention:** Explicit includes in queries
+- **Indexing:** Database indexes on frequently searched columns
+- **Caching:** Static asset caching with browser caching
+
+## Future Enhancements
+
+- Reading progress bar for books
+- Recommendation system based on ratings
+- Book review moderation
+- Export/import collection (CSV, JSON)
+- REST API for mobile clients
+- SignalR real-time notifications
+- Cloud deployment (Azure)
+
+## Contributing
+
+To contribute to BookNest:
+1. Fork the repository
+2. Create a feature branch
+3. Commit changes
+4. Push to the branch
+5. Create a Pull Request
+
+## Code Style & Conventions
+
+- **Naming:** PascalCase for classes/methods, camelCase for variables
+- **Comments:** Only for complex logic
+- **Formatting:** .NET Code Analyzer compliance
+- **Best Practices:** SOLID principles, DRY, KISS
+
+## Deployment
+
+### Prerequisites for Deployment
+- .NET 10 Runtime
+- SQL Server database
+- Web server (IIS / App Service)
+
+### Deployment Steps
+1. Publish the application: `dotnet publish -c Release`
+2. Configure connection string for production
+3. Run database migrations: `dotnet ef database update`
+4. Deploy to hosting platform
+
+## Licensing
+
+This project is created for educational purposes as part of the ASP.NET Advanced Course at SoftUni.
+
+## Contact
+
+For questions or issues, please open an issue on GitHub or contact the repository owner.
+
+---
+
+**Last Updated:** December 2026
+**Version:** 1.0.0
 - View all user ratings (My Ratings)
 - Leave comments on book reviews
 - Manage book collections

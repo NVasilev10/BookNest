@@ -1,0 +1,26 @@
+@{
+	ViewData["Title"] = "500 - Internal Server Error";
+}
+
+<div class="container mt-5">
+	<div class="row justify-content-center">
+		<div class="col-md-8 text-center">
+			<div class="error-page">
+				<h1 class="display-1 text-danger">500</h1>
+				<h2 class="text-danger">Internal Server Error</h2>
+				<p class="lead mt-3">Something went wrong on our end. Please try again later.</p>
+
+				<div class="mt-4">
+					<a asp-controller="Home" asp-action="Index" class="btn btn-primary btn-lg">Go to Home</a>
+					<a href="javascript:history.back()" class="btn btn-secondary btn-lg">Go Back</a>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<style>
+	.error-page {
+		padding: 50px 0;
+	}
+</style>
