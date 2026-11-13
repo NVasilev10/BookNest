@@ -5,16 +5,27 @@ using System.Security.Claims;
 using Microsoft.EntityFrameworkCore;
 using BookNest.Data;
 using BookNest.Models;
+using BookNest.Services;
 
 namespace BookNest.Controllers
 {
     public partial class BooksController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly IBookCatalogService _bookCatalogService;
+        private readonly IBookCollectionService _bookCollectionService;
+        private readonly IReviewService _reviewService;
 
-        public BooksController(ApplicationDbContext context)
+        public BooksController(
+            ApplicationDbContext context,
+            IBookCatalogService bookCatalogService,
+            IBookCollectionService bookCollectionService,
+            IReviewService reviewService)
         {
             _context = context;
+            _bookCatalogService = bookCatalogService;
+            _bookCollectionService = bookCollectionService;
+            _reviewService = reviewService;
         }
 
         // GET: Books
@@ -169,10 +180,9 @@ namespace BookNest.Controllers
             ViewData["ReviewCount"] = book.Reviews.Count;
 
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            var collections = await _context.BookCollections
-                .Include(c => c.Books)
-                .Where(c => userId != null && c.UserId == userId)
-                .ToListAsync();
+            var collections = userId == null
+                ? new List<BookCollection>()
+                : await _bookCollectionService.GetForUserAsync(userId);
             ViewData["Collections"] = collections;
             ViewData["IsFavorite"] = userId != null && await _context.BookFavorites.AnyAsync(f => f.UserId == userId && f.BookId == book.Id);
 
@@ -246,16 +256,9 @@ namespace BookNest.Controllers
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (userId == null)
                 return Challenge();
-            if (!await _context.Books.AnyAsync(b => b.Id == id))
+            if (!await _bookCatalogService.ToggleFavoriteAsync(id, userId))
                 return NotFound();
 
-            var favorite = await _context.BookFavorites.FindAsync(userId, id);
-            if (favorite == null)
-                _context.BookFavorites.Add(new BookFavorite { UserId = userId, BookId = id });
-            else
-                _context.BookFavorites.Remove(favorite);
-
-            await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Details), new { id });
         }
 
@@ -393,8 +396,9 @@ namespace BookNest.Controllers
                 return RedirectToAction(nameof(Details), new { id = bookId });
             }
 
-            _context.Add(review);
-            await _context.SaveChangesAsync();
+            if (!await _reviewService.CreateAsync(bookId, userId, review))
+                return NotFound();
+
             return RedirectToAction(nameof(Details), new { id = bookId });
         }
 

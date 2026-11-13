@@ -4,6 +4,7 @@ using System.Security.Claims;
 using Microsoft.EntityFrameworkCore;
 using BookNest.Data;
 using BookNest.Models;
+using BookNest.Services;
 
 namespace BookNest.Controllers
 {
@@ -49,11 +50,10 @@ namespace BookNest.Controllers
         public async Task<IActionResult> MyCollections()
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            var collections = await _context.BookCollections
-                .Include(c => c.Books)
-                .Where(c => userId != null && c.UserId == userId)
-                .ToListAsync();
+            if (userId == null)
+                return Challenge();
 
+            var collections = await _bookCollectionService.GetForUserAsync(userId);
             return View(collections);
         }
 
@@ -67,13 +67,10 @@ namespace BookNest.Controllers
             }
 
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            var collection = await _context.BookCollections
-                .Include(c => c.Books)
-                .ThenInclude(b => b.Reviews)
-                .Include(c => c.Books)
-                .ThenInclude(b => b.Author)
-                .FirstOrDefaultAsync(c => c.Id == id && userId != null && c.UserId == userId);
+            if (userId == null)
+                return NotFound();
 
+            var collection = await _bookCollectionService.GetOwnedWithBooksAsync(id.Value, userId);
             if (collection == null)
             {
                 return NotFound();
@@ -151,10 +148,7 @@ namespace BookNest.Controllers
                 return Challenge();
             if (ModelState.IsValid)
             {
-                collection.UserId = userId;
-                collection.CreatedDate = DateTime.Now;
-                _context.Add(collection);
-                await _context.SaveChangesAsync();
+                await _bookCollectionService.CreateAsync(collection, userId);
                 return RedirectToAction(nameof(MyCollections));
             }
             return View(collection);
@@ -170,7 +164,10 @@ namespace BookNest.Controllers
             }
 
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            var collection = await _context.BookCollections.FirstOrDefaultAsync(c => c.Id == id && userId != null && c.UserId == userId);
+            if (userId == null)
+                return NotFound();
+
+            var collection = await _bookCollectionService.GetOwnedAsync(id.Value, userId);
             if (collection == null)
             {
                 return NotFound();
@@ -191,29 +188,17 @@ namespace BookNest.Controllers
             }
 
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            var existing = await _context.BookCollections.FirstOrDefaultAsync(c => c.Id == id && userId != null && c.UserId == userId);
-            if (existing == null)
+            if (userId == null)
+                return NotFound();
+
+            if (!ModelState.IsValid && await _bookCollectionService.GetOwnedAsync(id, userId) == null)
                 return NotFound();
 
             if (ModelState.IsValid)
             {
-                try
-                {
-                    existing.Name = collection.Name;
-                    existing.Description = collection.Description;
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!BookCollectionExists(collection.Id))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
+                if (!await _bookCollectionService.UpdateAsync(id, userId, collection.Name, collection.Description))
+                    return NotFound();
+
                 return RedirectToAction(nameof(CollectionBooks), new { id = collection.Id });
             }
             return View("EditCollection", collection);
@@ -226,19 +211,8 @@ namespace BookNest.Controllers
         public async Task<IActionResult> AddToCollection(int bookId, int collectionId)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            var book = await _context.Books.FindAsync(bookId);
-            var collection = await _context.BookCollections.Include(c => c.Books).FirstOrDefaultAsync(c => c.Id == collectionId && userId != null && c.UserId == userId);
-            if (book == null || collection == null)
+            if (userId == null || !await _bookCollectionService.AddBookAsync(bookId, collectionId, userId))
                 return NotFound();
-
-            if (book != null && collection != null)
-            {
-                if (!collection.Books.Any(b => b.Id == bookId))
-                {
-                    collection.Books.Add(book);
-                    await _context.SaveChangesAsync();
-                }
-            }
 
             return RedirectToAction(nameof(Details), new { id = bookId });
         }
@@ -250,21 +224,8 @@ namespace BookNest.Controllers
         public async Task<IActionResult> RemoveFromCollection(int bookId, int collectionId)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            var collection = await _context.BookCollections
-                .Include(c => c.Books)
-                .FirstOrDefaultAsync(c => c.Id == collectionId && userId != null && c.UserId == userId);
-            if (collection == null)
+            if (userId == null || !await _bookCollectionService.RemoveBookAsync(bookId, collectionId, userId))
                 return NotFound();
-
-            if (collection != null)
-            {
-                var book = collection.Books.FirstOrDefault(b => b.Id == bookId);
-                if (book != null)
-                {
-                    collection.Books.Remove(book);
-                    await _context.SaveChangesAsync();
-                }
-            }
 
             return RedirectToAction(nameof(CollectionBooks), new { id = collectionId });
         }
@@ -276,21 +237,11 @@ namespace BookNest.Controllers
         public async Task<IActionResult> DeleteCollection(int id)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            var collection = await _context.BookCollections.FirstOrDefaultAsync(c => c.Id == id && userId != null && c.UserId == userId);
-            if (collection == null)
+            if (userId == null || !await _bookCollectionService.DeleteAsync(id, userId))
                 return NotFound();
-            if (collection != null)
-            {
-                _context.BookCollections.Remove(collection);
-                await _context.SaveChangesAsync();
-            }
 
             return RedirectToAction(nameof(MyCollections));
         }
 
-        private bool BookCollectionExists(int id)
-        {
-            return _context.BookCollections.Any(e => e.Id == id);
-        }
     }
 }

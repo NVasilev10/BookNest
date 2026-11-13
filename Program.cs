@@ -3,6 +3,7 @@ using BookNest.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Authentication;
+using BookNest.Services;
 
 var appInstanceId = Guid.NewGuid().ToString("N");
 var builder = WebApplication.CreateBuilder(args);
@@ -52,6 +53,9 @@ builder.Services.ConfigureApplicationCookie(options =>
 });
 
 // Add services to the container.
+builder.Services.AddScoped<IBookCatalogService, BookCatalogService>();
+builder.Services.AddScoped<IBookCollectionService, BookCollectionService>();
+builder.Services.AddScoped<IReviewService, ReviewService>();
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
 
@@ -186,4 +190,4 @@ app.MapControllerRoute(
     pattern: "{controller=Home}/{action=Index}/{id?}")
     .WithStaticAssets();
 
-app.Run();app.Run();
+app.Run();

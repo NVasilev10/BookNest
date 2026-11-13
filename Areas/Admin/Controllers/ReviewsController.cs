@@ -1,7 +1,6 @@
-using BookNest.Data;
+using BookNest.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace BookNest.Areas.Admin.Controllers
 {
@@ -9,22 +8,17 @@ namespace BookNest.Areas.Admin.Controllers
     [Authorize(Roles = "Administrator")]
     public class ReviewsController : Controller
     {
-        private readonly ApplicationDbContext _context;
+        private readonly IReviewService _reviewService;
 
-        public ReviewsController(ApplicationDbContext context)
+        public ReviewsController(IReviewService reviewService)
         {
-            _context = context;
+            _reviewService = reviewService;
         }
 
         public async Task<IActionResult> Index()
         {
             ViewBag.Message = TempData["Message"];
-            var reviews = await _context.Reviews
-                .Include(review => review.Book)
-                .Include(review => review.User)
-                .OrderByDescending(review => review.CreatedDate)
-                .ToListAsync();
-
+            var reviews = await _reviewService.GetAllAsync();
             return View(reviews);
         }
 
@@ -32,14 +26,10 @@ namespace BookNest.Areas.Admin.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> SetApproval(int id, bool isApproved)
         {
-            var review = await _context.Reviews.FindAsync(id);
-            if (review == null)
+            if (!await _reviewService.SetApprovalAsync(id, isApproved))
             {
                 return NotFound();
             }
-
-            review.IsApproved = isApproved;
-            await _context.SaveChangesAsync();
             TempData["Message"] = isApproved ? "Отзивът е одобрен." : "Отзивът е скрит.";
             return RedirectToAction(nameof(Index));
         }
@@ -48,14 +38,10 @@ namespace BookNest.Areas.Admin.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Delete(int id)
         {
-            var review = await _context.Reviews.FindAsync(id);
-            if (review == null)
+            if (!await _reviewService.DeleteAsync(id))
             {
                 return NotFound();
             }
-
-            _context.Reviews.Remove(review);
-            await _context.SaveChangesAsync();
             TempData["Message"] = "Отзивът е изтрит.";
             return RedirectToAction(nameof(Index));
         }
