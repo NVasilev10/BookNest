@@ -54,12 +54,27 @@ namespace BookNest.Areas.Admin.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> SetAdministratorRole(string userId, bool grantAdmin)
+        public Task<IActionResult> GrantAdministratorRole(string userId) => ChangeAdministratorRole(userId, grantAdmin: true);
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public Task<IActionResult> RevokeAdministratorRole(string userId) => ChangeAdministratorRole(userId, grantAdmin: false);
+
+        private async Task<IActionResult> ChangeAdministratorRole(string userId, bool grantAdmin)
         {
             var user = await _userManager.FindByIdAsync(userId);
             if (user == null)
             {
                 return NotFound();
+            }
+
+            var isAdministrator = await _userManager.IsInRoleAsync(user, "Administrator");
+            if (grantAdmin == isAdministrator)
+            {
+                TempData["Message"] = grantAdmin
+                    ? $"{user.UserName} вече има администраторски права."
+                    : $"{user.UserName} няма администраторски права за премахване.";
+                return RedirectToAction(nameof(Index));
             }
 
             if (!grantAdmin && user.Id == User.FindFirstValue(ClaimTypes.NameIdentifier))
@@ -88,9 +103,19 @@ namespace BookNest.Areas.Admin.Controllers
             }
             else
             {
-                TempData["Message"] = grantAdmin
+                var roleMessage = grantAdmin
                     ? $"На {user.UserName} е дадена администраторска роля."
                     : $"Администраторската роля на {user.UserName} е премахната.";
+                var stampResult = await _userManager.UpdateSecurityStampAsync(user);
+
+                if (stampResult.Succeeded)
+                {
+                    TempData["Message"] = $"{roleMessage} Потребителят трябва да влезе отново, за да се приложат промените.";
+                }
+                else
+                {
+                    TempData["Error"] = $"{roleMessage} Неуспешно обновяване на сесията: {string.Join(" ", stampResult.Errors.Select(error => error.Description))}";
+                }
             }
 
             return RedirectToAction(nameof(Index));

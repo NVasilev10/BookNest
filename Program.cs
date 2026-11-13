@@ -58,7 +58,7 @@ builder.Services.AddRazorPages();
 var app = builder.Build();
 
 // Seed database with initial data
-try
+try 
 {
     using (var scope = app.Services.CreateScope())
     {

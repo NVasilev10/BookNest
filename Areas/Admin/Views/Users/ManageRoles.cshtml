@@ -8,6 +8,10 @@
 }
 
 <div class="container">
+	@if (ViewBag.Message != null)
+	{
+		<div class="alert alert-success">@ViewBag.Message</div>
+	}
 	@if (ViewBag.Error != null)
 	{
 		<div class="alert alert-danger">@ViewBag.Error</div>
@@ -44,13 +48,11 @@
 							<input type="hidden" name="roleName" value="@role.Name" />
 							@if (isAssigned)
 							{
-								<input type="hidden" name="addRole" value="false" />
-								<button type="submit" class="btn btn-sm btn-danger">Remove</button>
+								<button type="submit" name="addRole" value="false" class="btn btn-sm btn-danger">Remove</button>
 							}
 							else
 							{
-								<input type="hidden" name="addRole" value="true" />
-								<button type="submit" class="btn btn-sm btn-success">Add</button>
+								<button type="submit" name="addRole" value="true" class="btn btn-sm btn-success">Add</button>
 							}
 						</form>
 					</td>

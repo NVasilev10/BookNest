@@ -81,26 +81,50 @@
 	</div>
 
 	<div class="card mt-3">
-		<div class="card-header"><h3 class="h5 mb-0">Потребители и администраторски права</h3></div>
+		<div class="card-header"><h3 class="h5 mb-0">Дай администраторски права</h3></div>
+		<div class="card-body">
+			@if (Model.Users.Any(user => !user.IsAdministrator))
+			{
+				<form asp-area="Admin" asp-controller="Dashboard" asp-action="GrantAdministratorRole" method="post" class="row g-2 align-items-end">
+					<div class="col-md-6">
+						<label for="userId" class="form-label">Избери потребител</label>
+						<select id="userId" name="userId" class="form-select" required>
+							<option value="">-- Избери потребител --</option>
+							@foreach (var user in Model.Users.Where(user => !user.IsAdministrator))
+							{
+								<option value="@user.Id">@user.UserName (@user.Email)</option>
+							}
+						</select>
+					</div>
+					<div class="col-auto">
+						<button type="submit" class="btn btn-success">Дай админ права</button>
+					</div>
+				</form>
+			}
+			else
+			{
+				<p class="mb-0">Всички потребители вече имат администраторски права.</p>
+			}
+		</div>
+	</div>
+
+	<div class="card mt-3">
+		<div class="card-header"><h3 class="h5 mb-0">Администратори</h3></div>
 		<div class="table-responsive">
 			<table class="table table-striped mb-0">
 				<thead>
-					<tr><th>Потребител</th><th>Имейл</th><th>Роля</th><th>Действие</th></tr>
+					<tr><th>Потребител</th><th>Имейл</th><th>Действие</th></tr>
 				</thead>
 				<tbody>
-					@foreach (var user in Model.Users)
+					@foreach (var user in Model.Users.Where(user => user.IsAdministrator))
 					{
 						<tr>
 							<td>@user.UserName</td>
 							<td>@user.Email</td>
-							<td>@(user.IsAdministrator ? "User + Administrator" : "User")</td>
 							<td>
-								<form asp-area="Admin" asp-controller="Dashboard" asp-action="SetAdministratorRole" method="post">
+								<form asp-area="Admin" asp-controller="Dashboard" asp-action="RevokeAdministratorRole" method="post">
 									<input type="hidden" name="userId" value="@user.Id" />
-									<input type="hidden" name="grantAdmin" value="@(!user.IsAdministrator)" />
-									<button type="submit" class="btn btn-sm @(user.IsAdministrator ? "btn-outline-danger" : "btn-outline-success")" @(user.IsAdministrator && user.Id == User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value ? "disabled" : null)>
-										@(user.IsAdministrator ? "Премахни админ права" : "Дай админ права")
-									</button>
+									<button type="submit" class="btn btn-sm btn-outline-danger" @(user.Id == User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value ? "disabled" : null)>Премахни админ права</button>
 								</form>
 							</td>
 						</tr>

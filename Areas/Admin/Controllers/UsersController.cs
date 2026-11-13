@@ -201,6 +201,7 @@ namespace BookNest.Areas.Admin.Controllers
             ViewBag.User = user;
             ViewBag.AllRoles = allRoles;
             ViewBag.UserRoles = userRoles;
+            ViewBag.Message = TempData["Message"];
             ViewBag.Error = TempData["Error"];
             return View();
         }
@@ -214,6 +215,15 @@ namespace BookNest.Areas.Admin.Controllers
                 return NotFound();
             if (roleName != "User" && roleName != "Administrator")
                 return BadRequest();
+
+            var hasRole = await _userManager.IsInRoleAsync(user, roleName);
+            if (addRole == hasRole)
+            {
+                TempData["Message"] = addRole
+                    ? $"{user.UserName} вече има ролята {roleName}."
+                    : $"{user.UserName} няма ролята {roleName} за премахване.";
+                return RedirectToAction(nameof(ManageRoles), new { id = userId });
+            }
 
             if (!addRole && roleName == "Administrator")
             {
@@ -238,6 +248,22 @@ namespace BookNest.Areas.Admin.Controllers
             if (!result.Succeeded)
             {
                 TempData["Error"] = string.Join(" ", result.Errors.Select(error => error.Description));
+            }
+            else
+            {
+                var roleMessage = addRole
+                    ? $"Ролята {roleName} е добавена на {user.UserName}."
+                    : $"Ролята {roleName} е премахната от {user.UserName}.";
+                var stampResult = await _userManager.UpdateSecurityStampAsync(user);
+
+                if (stampResult.Succeeded)
+                {
+                    TempData["Message"] = $"{roleMessage} Потребителят трябва да влезе отново, за да се приложат промените.";
+                }
+                else
+                {
+                    TempData["Error"] = $"{roleMessage} Неуспешно обновяване на сесията: {string.Join(" ", stampResult.Errors.Select(error => error.Description))}";
+                }
             }
 
             return RedirectToAction(nameof(ManageRoles), new { id = userId });
